@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ bag.name }}</title>
+</head>
+<body>
+
+<h1>ROS Bag "{{ bag.name }}"</h1>
+
+<ul>
+    <li>Start time: {{ bag.recording_date }}</li>
+    <li>Duration: {{ bag.duration }}</li>
+    <li> Topics:
+        <ul>
+            {% for name, type in bag.topics %}
+                <li>{{ name }} ({{ type }})</li>
+            {% endfor %}
+        </ul>
+    </li>
+    <li> Tags:
+        <ul>
+            {% for tag in bag.tags %}
+                <li>{{ tag }}</li>
+            {% endfor %}
+        </ul>
+    </li>
+    <li> Thumbnails:
+        <ul>
+            {% for tn in bag.thumbnails %}
+                <li><a href="{% url "rosbags:thumbnail" bag.name tn %}">{{ tn }}</a></li>
+            {% endfor %}
+        </ul>
+    </li>
+</ul>
+
+{% for tn in bag.thumbnails %}
+    <img src="{% url "rosbags:thumbnail" bag.name tn %}" width="200" alt="{{ tn }}"><br>
+{% endfor %}
+
+</body>
+</html>

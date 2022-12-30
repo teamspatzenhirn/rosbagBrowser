@@ -1,0 +1,5 @@
+django==4.1.4
+social-auth-app-django==5.0.0
+rosbags==0.9.13
+jsonschema==4.17.3
+python-dotenv==0.21.0

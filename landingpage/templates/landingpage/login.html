@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Team Spatzenhirn: Login</title>
+</head>
+<body>
+<p>The resource you were trying to access requires login.</p>
+{% if request.GET.next %}
+    <a href="{% url "social:begin" "gitlab" %}?next={{ request.GET.next }}">Login with GitLab</a>
+{% else %}
+    <a href="{% url "social:begin" "gitlab" %}">Login with GitLab</a>
+{% endif %}
+
+</body>
+</html>

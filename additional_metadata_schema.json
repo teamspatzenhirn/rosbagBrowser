@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "file:///home/jonas/Projects/rosbagBrowser/additional_metadata_schema.json",
+  "title": "ROS Bag metadata",
+  "description": "Additional metadata for a ROS bag in the context of a bag browser application",
+  "type": "object",
+  "properties": {
+    "description": {
+      "description": "Brief description of bag contents.",
+      "type": "string"
+    },
+    "hardware": {
+      "description": "Identification of the specific robot used to record the bag.",
+      "type": "string"
+    },
+    "tags": {
+      "description": "List of tags for filtering ROS bags.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "description",
+    "hardware",
+    "tags",
+    "location"
+  ]
+}

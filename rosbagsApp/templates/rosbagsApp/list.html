@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ROS Bag List</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <script>
+        const bags_data = JSON.parse('{{ bags | escapejs }}');
+
+        let known_topics = new Set();
+        for (const bag of bags_data) {
+            for (const topic of bag.topics) {
+                known_topics.add(topic.name);
+            }
+        }
+
+        function build_table(bags) {
+            const table = document.querySelector("#bag_table tbody");
+            table.textContent = "";
+
+            for (const bag of bags) {
+                let new_row = table.insertRow();
+                let name_cell = new_row.insertCell();
+                name_cell.appendChild(document.createTextNode(bag.name))
+
+                let date_cell = new_row.insertCell();
+                date_cell.appendChild(document.createTextNode(bag.date));
+
+                let duration_cell = new_row.insertCell();
+                duration_cell.appendChild(document.createTextNode(bag.duration));
+
+                let topics_cell = new_row.insertCell();
+                for (const topic of bag.topics) {
+                    const paragraph = document.createElement("p");
+                    paragraph.appendChild(document.createTextNode(`${topic.name} (${topic.type})`))
+                    topics_cell.appendChild(paragraph);
+                }
+
+                let tags_cell = new_row.insertCell();
+                tags_cell.appendChild(document.createTextNode(bag.tags.join(", ")));
+            }
+        }
+
+        function build_filters() {
+            const template = document.getElementById("topic_filter_element");
+            const topic_filter_container = document.getElementById("topic_filter");
+            for (const topic of known_topics) {
+                const clone = template.content.cloneNode(true);
+                const cb = clone.querySelector("input");
+                // TODO: Use a more sensible ID
+                cb.setAttribute("id", topic);
+                cb.setAttribute("data-topic", topic);
+                const label = clone.querySelector("label");
+                label.setAttribute("for", topic);
+                label.appendChild(document.createTextNode(topic));
+                topic_filter_container.appendChild(clone);
+            }
+        }
+
+        function refresh_filters() {
+            console.log("TODO: Implement filtering");
+
+            let required_topics = new Set();
+            const filters = document.querySelectorAll("#topic_filter input");
+            for (const filter of filters) {
+                if (filter.checked) {
+                    required_topics.add(filter.getAttribute("data-topic"));
+                }
+            }
+
+            let bags = [];
+            for (const bag of bags_data) {
+                let has_all = true;
+                let topics = new Set();
+                for (const t of bag.topics) {
+                    topics.add(t.name);
+                }
+                for (const t of required_topics) {
+                    if (!topics.has(t)) {
+                        has_all = false;
+                        break;
+                    }
+                }
+                if (has_all) {
+                    bags.push(bag);
+                }
+            }
+
+            build_table(bags);
+        }
+
+        function init() {
+            build_table(bags_data);
+            build_filters();
+        }
+
+        window.onload = init;
+    </script>
+
+    <template id="topic_filter_element">
+        <input type="checkbox" onchange="refresh_filters()">
+        <label></label><br>
+    </template>
+
+</head>
+<body>
+<h1>ROS Bag List</h1>
+
+<div id="topic_filter">
+    <p>Required topics:</p>
+</div>
+
+<br>
+
+<table id="bag_table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Duration</th>
+        <th>Topics</th>
+        <th>Tags</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for bag in bags_debug %}
+        <tr>
+            <td><a href="{% url "rosbags:detail" bag.name %}">{{ bag.name }}</a></td>
+            <td>{{ bag.recording_date }}</td>
+            <td>{{ bag.duration }}</td>
+            <td>
+                {% for name, type in bag.topics %}
+                    {{ name }} ({{ type }})<br>
+                {% endfor %}
+            </td>
+            <td>
+                {{ bag.tags|join:", " }}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Team Spatzenhirn</title>
+</head>
+<body>
+<h1>Welcome to the landing page!</h1>
+
+{% if request.user.is_authenticated %}
+    <p>You are authenticated!</p>
+    <p>
+        Welcome, {{ request.user }}.
+        <a href="{% url 'logout' %}">Logout</a>
+    </p>
+{% else %}
+    <p>You are not logged in.</p>
+    <a href="{% url "social:begin" "gitlab" %}">Login with GitLab</a>
+{% endif %}
+
+<p>
+    <a href="{% url 'rosbags:index' %}">ROS Bags</a>
+</p>
+
+<p>
+    <a href="{% url 'admin:index' %}">Admin backend</a>
+</p>
+</body>
+</html>
