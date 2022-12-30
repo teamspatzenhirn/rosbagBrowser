@@ -128,21 +128,6 @@
     </tr>
     </thead>
     <tbody>
-    {% for bag in bags_debug %}
-        <tr>
-            <td><a href="{% url "rosbags:detail" bag.name %}">{{ bag.name }}</a></td>
-            <td>{{ bag.recording_date }}</td>
-            <td>{{ bag.duration }}</td>
-            <td>
-                {% for name, type in bag.topics %}
-                    {{ name }} ({{ type }})<br>
-                {% endfor %}
-            </td>
-            <td>
-                {{ bag.tags|join:", " }}
-            </td>
-        </tr>
-    {% endfor %}
     </tbody>
 </table>
 </body>
