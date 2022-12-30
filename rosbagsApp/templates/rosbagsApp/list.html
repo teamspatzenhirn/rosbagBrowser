@@ -24,9 +24,14 @@
             table.textContent = "";
 
             for (const bag of bags) {
+                const bag_url = "{% url "rosbags:detail" "bag_name_placeholder" %}".replace(/bag_name_placeholder/, bag.name);
+
                 let new_row = table.insertRow();
                 let name_cell = new_row.insertCell();
-                name_cell.appendChild(document.createTextNode(bag.name))
+                const bag_link = document.createElement("a");
+                bag_link.setAttribute("href", bag_url);
+                bag_link.appendChild(document.createTextNode(bag.name));
+                name_cell.appendChild(bag_link);
 
                 let date_cell = new_row.insertCell();
                 date_cell.appendChild(document.createTextNode(bag.date));
