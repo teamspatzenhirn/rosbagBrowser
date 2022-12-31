@@ -43,7 +43,6 @@
                     const span = clone.querySelector("span");
                     span.appendChild(document.createTextNode(tag));
                     tags_cell.appendChild(clone);
-                    console.log(clone);
                 }
             }
         }
@@ -65,8 +64,6 @@
         }
 
         function refresh_filters() {
-            console.log("TODO: Implement filtering");
-
             let required_topics = new Set();
             const filters = document.querySelectorAll("#topic_filter input");
             for (const filter of filters) {
