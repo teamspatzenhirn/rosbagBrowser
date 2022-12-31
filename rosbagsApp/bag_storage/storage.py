@@ -29,6 +29,14 @@ def is_rosbag(path: str):
 
 
 class ROSBag:
+    """
+    ROS bag, providing access to metadata (metadata.yaml) and additional metadata (additional_metadata.json).
+    Metadata is loaded lazily and cached, additional metadata is loaded on construction.
+
+    TODO: not lazily load stuff? We probably need most of the data most of the time?
+     Would opening the reader only once be faster?
+    """
+
     def __init__(self, base_path: str, dir_name: str):
         self.path = os.path.join(base_path, dir_name)
         assert (is_rosbag(self.path))
@@ -43,6 +51,7 @@ class ROSBag:
 
     @property
     def name(self):
+        """Bag name: name of directory"""
         return self.dir_name
 
     def __str__(self):
@@ -54,6 +63,7 @@ class ROSBag:
 
     @cached_property
     def recording_date(self) -> datetime.datetime:
+        """Date and time of recording start"""
         with rb.Reader(self.path) as reader:
             return datetime.datetime.fromtimestamp(reader.start_time // 1000000000)
 
@@ -64,6 +74,7 @@ class ROSBag:
 
     @cached_property
     def topics(self) -> list[(str, str)]:
+        """List (name, type) of topics in bag"""
         topics = []
         with rb.Reader(self.path) as reader:
             for connection in reader.connections:
@@ -72,11 +83,13 @@ class ROSBag:
 
     @property
     def tags(self) -> list[str]:
+        """List of tags in additional metadata file"""
         if not hasattr(self, 'metadata'):
             return []
         return self.metadata['tags']
 
     def thumbnails(self) -> list[str]:
+        """Filenames of available thumbnails (in bag_name/thumbnails/ directory)"""
         res = []
         thumbnail_dir = os.path.join(self.path, "thumbnails")
         if os.path.exists(thumbnail_dir) and os.path.isdir(thumbnail_dir):
@@ -86,6 +99,7 @@ class ROSBag:
         return res
 
     def json(self) -> dict:
+        """Dict representation for serializing to json, intended for displaying in frontend -> used by JS"""
         return {"name": self.name,
                 "topics": [{"name": n, "type": t} for n, t in self.topics],
                 "date": self.recording_date.isoformat(),
@@ -94,15 +108,30 @@ class ROSBag:
 
 
 class BagStorage:
-    def __init__(self, path: str = storage_path):
+    """
+    Class representing a directory containing ROS bags, allowing iteration and lookup by name
+    """
+
+    def __init__(self, path: str = rosbagsApp.settings.ROSBAG_STORAGE_PATH):
+        """
+        :param path: Directory containing ROS bags. Defaults to configured path from ROSBAG_STORAGE_PATH setting
+        """
         self.base_path = path
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[ROSBag, None, None]:
+        """
+        Iterating over the BagStorage yields all bags in configured directory
+        """
         for entry in os.scandir(self.base_path):
             if entry.is_dir() and is_rosbag(entry.path):
                 yield ROSBag(self.base_path, entry.name)
 
     def find(self, name: str) -> Optional[ROSBag]:
+        """
+        Lookup ROS bag by name
+        :param name: Name of the ROS bag (directory)
+        :return: ROS bag with specified name, or None if not found
+        """
         path = os.path.join(self.base_path, name)
         if not is_rosbag(path):
             return None
