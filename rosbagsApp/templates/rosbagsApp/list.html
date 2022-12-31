@@ -8,6 +8,10 @@
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
     <script>
+        /**
+         * Clear and (re-)populate the table with the provided ROS bags
+         * @param bags List of ROS bags
+         */
         function build_table(bags) {
             const table = document.querySelector("#bag_table tbody");
             table.textContent = "";
@@ -47,6 +51,9 @@
             }
         }
 
+        /**
+         * Populate the #topic_filter and #tag_filter elements with the collected topic names and tags
+         */
         function build_filters() {
             const template = document.getElementById("filter_checkbox_template");
             const topic_filter_container = document.querySelector("#topic_filter .card-body");
@@ -74,6 +81,9 @@
             }
         }
 
+        /**
+         * Check filter settings and re-build table accordingly. Call whenever filter changes.
+         */
         function refresh_filters() {
             let required_topics = new Set();
             const topic_filters = document.querySelectorAll("#topic_filter input");
@@ -133,6 +143,11 @@
             build_table(bags);
         }
 
+        /**
+         * Collect all known topic names from all bags
+         * @param bags List of ROS bags
+         * @returns {Set<String>}
+         */
         function all_topics(bags) {
             let topics = new Set();
             for (const bag of bags) {
@@ -143,6 +158,11 @@
             return topics;
         }
 
+        /**
+         * Collect all known tags from all bags
+         * @param bags List of ROS bags
+         * @returns {Set<String>}
+         */
         function all_tags(bags) {
             let tags = new Set();
             for (const bag of bags) {
