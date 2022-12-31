@@ -141,3 +141,5 @@ SOCIAL_AUTH_GITLAB_SECRET = os.environ["GITLAB_SECRET"]
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
+
+ROSBAG_STORAGE_PATH = "/home/jonas/Projects/Carolo/rosbags"

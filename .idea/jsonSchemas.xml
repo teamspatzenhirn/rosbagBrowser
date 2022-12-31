@@ -8,7 +8,7 @@
             <SchemaInfo>
               <option name="generatedName" value="New Schema" />
               <option name="name" value="additional_metadata" />
-              <option name="relativePathToSchema" value="additional_metadata_schema.json" />
+              <option name="relativePathToSchema" value="rosbagsApp/static/rosbagsApp/additional_metadata_schema.json" />
               <option name="schemaVersion" value="JSON Schema version 7" />
               <option name="patterns">
                 <list>

@@ -1,22 +1,18 @@
+import datetime
+import json
 import os
-from typing import Optional
+from typing import Optional, Generator
 
 import rosbags.rosbag2 as rb
-import datetime
-
-import json
-
+from django.contrib.staticfiles import finders
+from django.utils.functional import cached_property
 from jsonschema import validate
 
-from django.utils.functional import cached_property
-
-# TODO: Configuration variable / Database setting
-storage_path = "/home/jonas/Projects/Carolo/rosbags"
+import rosbagsApp.settings
 
 additional_metadata_file_name = "additional_metadata.json"
 
-# TODO: Find out how to use project-relative paths
-additional_metadata_schema_location = "/home/jonas/Projects/rosbagBrowser/additional_metadata_schema.json"
+additional_metadata_schema_location = finders.find("rosbagsApp/additional_metadata_schema.json")
 
 with open(additional_metadata_schema_location, 'r') as schema_file:
     additional_metadata_schema = json.load(schema_file)
