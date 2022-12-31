@@ -1,27 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
     <title>ROS Bag List</title>
-    <style>
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-        }
-    </style>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
     <script>
-        const bags_data = JSON.parse('{{ bags | escapejs }}');
-
-        let known_topics = new Set();
-        for (const bag of bags_data) {
-            for (const topic of bag.topics) {
-                known_topics.add(topic.name);
-            }
-        }
-
         function build_table(bags) {
             const table = document.querySelector("#bag_table tbody");
             table.textContent = "";
+
+            const tag_template = document.getElementById("tag_template");
 
             for (const bag of bags) {
                 const bag_url = "{% url "rosbags:detail" "bag_name_placeholder" %}".replace(/bag_name_placeholder/, bag.name);
@@ -47,7 +38,13 @@
                 }
 
                 let tags_cell = new_row.insertCell();
-                tags_cell.appendChild(document.createTextNode(bag.tags.join(", ")));
+                for (const tag of bag.tags) {
+                    const clone = tag_template.content.cloneNode(true);
+                    const span = clone.querySelector("span");
+                    span.appendChild(document.createTextNode(tag));
+                    tags_cell.appendChild(clone);
+                    console.log(clone);
+                }
             }
         }
 
@@ -99,12 +96,20 @@
             build_table(bags);
         }
 
+        function all_topics(bags) {
+            let topics = new Set();
+            for (const bag of bags) {
+                for (const topic of bag.topics) {
+                    topics.add(topic.name);
+                }
+            }
+            return topics;
+        }
+
         function init() {
             build_table(bags_data);
             build_filters();
         }
-
-        window.onload = init;
     </script>
 
     <template id="topic_filter_element">
@@ -112,6 +117,9 @@
         <label></label><br>
     </template>
 
+    <template id="tag_template">
+        <span class="badge text-bg-primary"></span>
+    </template>
 </head>
 <body>
 <h1>ROS Bag List</h1>
@@ -122,7 +130,7 @@
 
 <br>
 
-<table id="bag_table">
+<table id="bag_table" class="table table-hover">
     <thead>
     <tr>
         <th>Name</th>
@@ -135,5 +143,16 @@
     <tbody>
     </tbody>
 </table>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+
+<script>
+    const bags_data = JSON.parse('{{ bags | escapejs }}');
+    const known_topics = all_topics(bags_data);
+
+    init();
+</script>
 </body>
 </html>
