@@ -3,40 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ bag.name }}</title>
+    {% include "partials/bootstrap_header.html" %}
 </head>
 <body>
+<main class="container">
+    <h1>ROS Bag "{{ bag.name }}"</h1>
 
-<h1>ROS Bag "{{ bag.name }}"</h1>
+    <h2>Metadata</h2>
 
-<ul>
-    <li>Start time: {{ bag.recording_date }}</li>
-    <li>Duration: {{ bag.duration }}</li>
-    <li> Topics:
-        <ul>
-            {% for name, type in bag.topics %}
-                <li>{{ name }} ({{ type }})</li>
-            {% endfor %}
-        </ul>
-    </li>
-    <li> Tags:
-        <ul>
-            {% for tag in bag.tags %}
-                <li>{{ tag }}</li>
-            {% endfor %}
-        </ul>
-    </li>
-    <li> Thumbnails:
-        <ul>
-            {% for tn in bag.thumbnails %}
-                <li><a href="{% url "rosbags:thumbnail" bag.name tn %}">{{ tn }}</a></li>
-            {% endfor %}
-        </ul>
-    </li>
-</ul>
+    <ul>
+        <li>Start time: {{ bag.recording_date }}</li>
+        <li>Duration: {{ bag.duration }}</li>
+        <li> Topics:
+            <ul>
+                {% for name, type in bag.topics %}
+                    <li>{{ name }} ({{ type }})</li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li> Tags:
+            <ul>
+                {% for tag in bag.tags %}
+                    <li>{{ tag }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li> Thumbnails:
+            <ul>
+                {% for tn in bag.thumbnails %}
+                    <li><a href="{% url "rosbags:thumbnail" bag.name tn %}">{{ tn }}</a></li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
 
-{% for tn in bag.thumbnails %}
-    <img src="{% url "rosbags:thumbnail" bag.name tn %}" width="200" alt="{{ tn }}"><br>
-{% endfor %}
+    <!-- TODO: Associate topics with thumbnails -->
 
+    <h2>Topics</h2>
+    <div class="row">
+        {% for name, type in bag.topics %}
+            <div class="col">
+                <div class="card h-100">
+
+                    <div class="card-body">
+                        <h6 class="card-title">{{ name }}</h6>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">{{ type }}</li>
+                        <li class="list-group-item">N messages (TODO)</li>
+                    </ul>
+                    <div class="card-body">
+                        <p class="card-text">Some more info (TODO)</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h2>Thumbnails</h2>
+    <div class="row">
+        {% for tn in bag.thumbnails %}
+            <div class="col">
+                <div class="card h-100">
+                    <img src="{% url "rosbags:thumbnail" bag.name tn %}" class="card-img-top" alt="{{ tn }}">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ tn }}</h6>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</main>
+
+{% include "partials/bootstrap_body.html" %}
 </body>
 </html>
