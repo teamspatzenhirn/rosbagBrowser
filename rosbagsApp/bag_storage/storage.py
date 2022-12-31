@@ -96,10 +96,11 @@ class ROSBag:
 
     def json(self) -> dict:
         """Dict representation for serializing to json, intended for displaying in frontend -> used by JS"""
+        # TODO: Move formatting etc. into the view (client side?)
         return {"name": self.name,
                 "topics": [{"name": n, "type": t} for n, t in self.topics],
-                "date": self.recording_date.isoformat(),
-                "duration": int(self.duration.total_seconds() * 1000),
+                "date": self.recording_date.strftime("%Y %b. %d, %H:%M"),
+                "duration": str(self.duration),
                 "tags": self.tags}
 
 

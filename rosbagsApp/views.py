@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponseBadRequest
 from django.shortcuts import render
 
-from rosbagsApp.bag_storage.storage import BagStorage
+from rosbagsApp.bag_storage.storage import BagStorage, ROSBag
 
 
 @login_required
@@ -15,7 +15,11 @@ def index(request):
 
 @login_required
 def list_view(request):
-    bags_json = json.dumps([b.json() for b in BagStorage()])
+    bs = BagStorage()
+    bags: list[ROSBag] = list(bs)
+    bags.sort(key=lambda b: b.recording_date, reverse=True)
+
+    bags_json = json.dumps([b.json() for b in bags])
     context = {'bags': bags_json}
 
     return render(request, "rosbagsApp/list.html", context)
