@@ -48,46 +48,86 @@
         }
 
         function build_filters() {
-            const template = document.getElementById("topic_filter_element");
-            const topic_filter_container = document.getElementById("topic_filter");
+            const template = document.getElementById("filter_checkbox_template");
+            const topic_filter_container = document.querySelector("#topic_filter .card-body");
             for (const topic of known_topics) {
                 const clone = template.content.cloneNode(true);
                 const cb = clone.querySelector("input");
-                // TODO: Use a more sensible ID
-                cb.setAttribute("id", topic);
+                cb.setAttribute("id", "topic_filter_" + topic);
                 cb.setAttribute("data-topic", topic);
                 const label = clone.querySelector("label");
-                label.setAttribute("for", topic);
+                label.setAttribute("for", "topic_filter_" + topic);
                 label.appendChild(document.createTextNode(topic));
                 topic_filter_container.appendChild(clone);
+            }
+
+            const tag_filter_container = document.querySelector("#tag_filter .card-body");
+            for (const tag of known_tags) {
+                const clone = template.content.cloneNode(true);
+                const input = clone.querySelector("input");
+                input.setAttribute("id", "tag_filter_" + tag);
+                input.setAttribute("data-tag", tag);
+                const label = clone.querySelector("label");
+                label.setAttribute("for", "tag_filter_" + tag);
+                label.appendChild(document.createTextNode(tag));
+                tag_filter_container.appendChild(clone);
             }
         }
 
         function refresh_filters() {
             let required_topics = new Set();
-            const filters = document.querySelectorAll("#topic_filter input");
-            for (const filter of filters) {
+            const topic_filters = document.querySelectorAll("#topic_filter input");
+            for (const filter of topic_filters) {
                 if (filter.checked) {
                     required_topics.add(filter.getAttribute("data-topic"));
                 }
             }
 
-            let bags = [];
-            for (const bag of bags_data) {
-                let has_all = true;
+            let required_tags = new Set();
+            const tag_filters = document.querySelectorAll("#tag_filter input");
+            for (const filter of tag_filters) {
+                if (filter.checked) {
+                    required_tags.add(filter.getAttribute("data-tag"));
+                }
+            }
+
+            function contains_all_required_topics(bag) {
                 let topics = new Set();
                 for (const t of bag.topics) {
                     topics.add(t.name);
                 }
                 for (const t of required_topics) {
                     if (!topics.has(t)) {
-                        has_all = false;
-                        break;
+                        return false;
                     }
                 }
-                if (has_all) {
-                    bags.push(bag);
+                return true;
+            }
+
+            function contains_all_required_tags(bag) {
+                let tags = new Set();
+                for (const t of bag.tags) {
+                    tags.add(t);
                 }
+                for (const t of required_tags) {
+                    if (!tags.has(t)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            let bags = [];
+            for (const bag of bags_data) {
+                if (!contains_all_required_topics(bag)) {
+                    continue;
+                }
+
+                if (!contains_all_required_tags(bag)) {
+                    continue;
+                }
+
+                bags.push(bag);
             }
 
             build_table(bags);
@@ -103,13 +143,23 @@
             return topics;
         }
 
+        function all_tags(bags) {
+            let tags = new Set();
+            for (const bag of bags) {
+                for (const tag of bag.tags) {
+                    tags.add(tag);
+                }
+            }
+            return tags;
+        }
+
         function init() {
             build_table(bags_data);
             build_filters();
         }
     </script>
 
-    <template id="topic_filter_element">
+    <template id="filter_checkbox_template">
         <input type="checkbox" onchange="refresh_filters()">
         <label></label><br>
     </template>
@@ -119,27 +169,43 @@
     </template>
 </head>
 <body>
-<h1>ROS Bag List</h1>
 
-<div id="topic_filter">
-    <p>Required topics:</p>
-</div>
+<main class="container">
+    <h1>ROS Bag List</h1>
 
-<br>
+    <div class="row">
+        <div class="col">
+            <div id="topic_filter" class="card h-100" style="width: 24rem;">
+                <div class="card-body">
+                    <p>Required topics:</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div id="tag_filter" class="card h-100" style="width: 24rem;">
+                <div class="card-body">
+                    <p>Required tags:</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<table id="bag_table" class="table table-hover">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Date</th>
-        <th>Duration</th>
-        <th>Topics</th>
-        <th>Tags</th>
-    </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
+    <br>
+
+    <table id="bag_table" class="table table-hover">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Duration</th>
+            <th>Topics</th>
+            <th>Tags</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
@@ -148,6 +214,7 @@
 <script>
     const bags_data = JSON.parse('{{ bags | escapejs }}');
     const known_topics = all_topics(bags_data);
+    const known_tags = all_tags(bags_data);
 
     init();
 </script>
