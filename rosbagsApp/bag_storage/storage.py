@@ -78,6 +78,13 @@ class ROSBag:
         return topics
 
     @property
+    def description(self) -> str:
+        """Description from external metadata"""
+        if not hasattr(self, 'metadata'):
+            return ""
+        return self.metadata['description']
+
+    @property
     def tags(self) -> list[str]:
         """List of tags in additional metadata file"""
         if not hasattr(self, 'metadata'):
@@ -101,7 +108,8 @@ class ROSBag:
                 "topics": [{"name": n, "type": t} for n, t in self.topics],
                 "date": self.recording_date.strftime("%Y %b. %d, %H:%M"),
                 "duration": str(self.duration),
-                "tags": self.tags}
+                "tags": self.tags,
+                "description": self.description}
 
 
 class BagStorage:

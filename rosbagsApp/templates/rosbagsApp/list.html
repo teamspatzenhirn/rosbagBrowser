@@ -6,6 +6,8 @@
 
     {% include "partials/bootstrap_header.html" %}
 
+    <script src="https://unpkg.com/lunr@2.3.9/lunr.js"></script>
+
     <script>
         /**
          * Clear and (re-)populate the table with the provided ROS bags
@@ -81,9 +83,9 @@
         }
 
         /**
-         * Check filter settings and re-build table accordingly. Call whenever filter changes.
+         * Filter list of bags using manual filters.
          */
-        function refresh_filters() {
+        function apply_filters(bags) {
             let required_topics = new Set();
             const topic_filters = document.querySelectorAll("#topic_filter input");
             for (const filter of topic_filters) {
@@ -126,8 +128,8 @@
                 return true;
             }
 
-            let bags = [];
-            for (const bag of bags_data) {
+            let filtered_bags = [];
+            for (const bag of bags) {
                 if (!contains_all_required_topics(bag)) {
                     continue;
                 }
@@ -136,9 +138,52 @@
                     continue;
                 }
 
-                bags.push(bag);
+                filtered_bags.push(bag);
             }
 
+            return filtered_bags;
+        }
+
+        /**
+         * Filter list of bags using search function
+         */
+        function apply_search(bags) {
+            const search_input = document.getElementById("search_input");
+
+            if (search_input.value === "") {
+                return bags;
+            }
+
+            let search_results;
+            try {
+                search_results = idx.search(search_input.value);
+            } catch (e) {
+                console.error(e);
+                return bags;
+            }
+
+            let matched_bag_names = new Set();
+            for (const res of search_results) {
+                matched_bag_names.add(res.ref);
+            }
+
+            let filtered_bags = [];
+            for (const bag of bags) {
+                if (matched_bag_names.has(bag.name)) {
+                    filtered_bags.push(bag);
+                }
+            }
+
+            return filtered_bags;
+        }
+
+        /**
+         * Filter all bags and re-build table accordingly. Call whenever filter changes.
+         */
+        function refresh_table() {
+            let bags = bags_data;
+            bags = apply_search(bags);
+            bags = apply_filters(bags);
             build_table(bags);
         }
 
@@ -173,13 +218,13 @@
         }
 
         function init() {
-            build_table(bags_data);
             build_filters();
+            refresh_table();
         }
     </script>
 
     <template id="filter_checkbox_template">
-        <input type="checkbox" onchange="refresh_filters()">
+        <input type="checkbox" onchange="refresh_table()">
         <label></label><br>
     </template>
 
@@ -211,6 +256,8 @@
 
     <br>
 
+    <input type="text" class="form-control" id="search_input" placeholder="Search" oninput="refresh_table()">
+
     <table id="bag_table" class="table table-hover">
         <thead>
         <tr>
@@ -232,6 +279,21 @@
     const bags_data = JSON.parse('{{ bags | escapejs }}');
     const known_topics = all_topics(bags_data);
     const known_tags = all_tags(bags_data);
+
+    // Build search index, see https://lunrjs.com/guides/getting_started.html
+    const idx = lunr(function () {
+        this.ref('name');
+        this.field('name');
+        this.field('description');
+
+        // Add underscores as separator, see https://github.com/olivernn/lunr.js/issues/286
+        this.tokenizer.separator = /[\s\-_]+/
+        lunr.QueryLexer.termSeparator = lunr.tokenizer.separator
+
+        bags_data.forEach(function (bag) {
+            this.add(bag);
+        }, this)
+    })
 
     init();
 </script>
