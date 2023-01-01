@@ -142,4 +142,5 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
 
-ROSBAG_STORAGE_PATH = "/home/jonas/Projects/Carolo/rosbags"
+ROSBAG_STORAGE_PATH = "testdata"
+ROSBAG_MOUNT_PATH = "/mnt/rosbags"
