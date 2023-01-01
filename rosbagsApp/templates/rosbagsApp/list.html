@@ -29,6 +29,9 @@
                 bag_link.appendChild(document.createTextNode(bag.name));
                 name_cell.appendChild(bag_link);
 
+                let description_cell = new_row.insertCell();
+                description_cell.appendChild(document.createTextNode(bag.description));
+
                 let date_cell = new_row.insertCell();
                 date_cell.appendChild(document.createTextNode(bag.date));
 
@@ -262,6 +265,7 @@
         <thead>
         <tr>
             <th>Name</th>
+            <th>Description</th>
             <th>Date</th>
             <th>Duration</th>
             <th>Topics</th>
