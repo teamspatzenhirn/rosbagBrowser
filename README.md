@@ -56,10 +56,14 @@ For more details, see the
 [`python-social-auth` documentation](https://python-social-auth.readthedocs.io/en/latest/backends/gitlab.html).
 
 ROS bags are stored in a directory on disk. The path must be configured
-in [`rosbagBrowser/settings.py`](rosbagBrowser/settings.py):
+in [`rosbagBrowser/settings.py`](rosbagBrowser/settings.py).
+Additionally, the path under which a user can access the ROS bags can be modified using `ROSBAG_MOUNT_PATH`.
+The `ROSBAG_MOUNT_PATH` is only displayed to the user and never accessed by the server, and defaults to the
+`ROSBAG_STORAGE_PATH`.
 
 ```python
-ROSBAG_STORAGE_PATH = "/home/jonas/Projects/Carolo/rosbags"
+ROSBAG_STORAGE_PATH = "/home/jonas/Projects/Carolo/rosbags"  # Path at which the server accesses ROS bags
+ROSBAG_MOUNT_PATH = "/mnt/rosbags"  # Path at which a user accesses ROS bags
 ```
 
 ### Database

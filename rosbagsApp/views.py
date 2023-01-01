@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponseBadRequest
 from django.shortcuts import render
 
+import rosbagsApp.settings
 from rosbagsApp.bag_storage.storage import BagStorage, ROSBag
 
 
@@ -28,7 +29,8 @@ def list_view(request):
 @login_required
 def detail(request, bag_name: str):
     bs = BagStorage()
-    context = {'bag': bs.find(bag_name)}
+    context = {'bag': bs.find(bag_name),
+               'local_mount_prefix': rosbagsApp.settings.ROSBAG_MOUNT_PATH}
     return render(request, "rosbagsApp/detail_view.html", context)
 
 

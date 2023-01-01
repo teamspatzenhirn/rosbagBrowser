@@ -4,10 +4,28 @@
     <meta charset="UTF-8">
     <title>{{ bag.name }}</title>
     {% include "partials/bootstrap_header.html" %}
+    <script>
+        /**
+         * Copies the value of a given input field to the clipboard
+         * @param input_id The ID of the input
+         */
+        function copyInputToClipboard(input_id) {
+            const input = document.getElementById(input_id);
+            navigator.clipboard.writeText(input.value);
+        }
+    </script>
 </head>
 <body>
 <main class="container">
     <h1>ROS Bag "{{ bag.name }}"</h1>
+
+    <div class="input-group">
+        <input type="text" class="form-control" id="input_local_path" readonly
+               value="{{ local_mount_prefix }}/{{ bag.name }}">
+        <button class="btn btn-outline-secondary" type="button" onclick="copyInputToClipboard('input_local_path')"><i
+                class="bi-clipboard"></i>
+        </button>
+    </div>
 
     <h2>Metadata</h2>
 
