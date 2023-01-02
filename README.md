@@ -27,7 +27,9 @@ and each `additional_metadata.json` must conform to the schema (this is automati
 
 Previews of contained data helps in finding a usable ROS bag.
 We want to show preview images of video-topics, but generation of these is currently not implemented.
-For now, all files in the `thumbnails` subdirectory of each ROS bag are displayed as images.
+Thumbnails can be specified for topics in `additional_metadata.json`. See the schema or the
+[`additional_metadata.json` used for unit testing](rosbagsApp/testdata/unit_test_bag/additional_metadata.json) for an
+example.
 
 ## Dev Setup
 
