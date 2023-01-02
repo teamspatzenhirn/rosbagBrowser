@@ -34,7 +34,7 @@ class ROSBag:
     """
 
     def __init__(self, base_path: str, dir_name: str):
-        self.path = os.path.join(base_path, dir_name)
+        self.path = os.path.realpath(os.path.join(base_path, dir_name))
         assert (is_rosbag(self.path))
         self.base_path = base_path
         self.dir_name = dir_name
