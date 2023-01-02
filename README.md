@@ -79,6 +79,10 @@ To initially create the database, run the migrations:
 foo@bar:~$ ./manage.py migrate
 ```
 
+### Tests
+
+Run tests using `./manage.py test`
+
 ## Deployment
 
 ### Server setup

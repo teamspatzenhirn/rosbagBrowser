@@ -13,10 +13,7 @@
               <option name="patterns">
                 <list>
                   <Item>
-                    <option name="path" value="file://$PROJECT_DIR$/../Carolo/rosbags/2022_09_08_odometry_fixed_accelerometer/additional_metadata.json" />
-                  </Item>
-                  <Item>
-                    <option name="path" value="file://$PROJECT_DIR$/../Carolo/rosbags/2022_08_19_ioboard_sensordata_only/additional_metadata.json" />
+                    <option name="path" value="rosbagsApp/testdata/unit_test_bag/additional_metadata.json" />
                   </Item>
                 </list>
               </option>

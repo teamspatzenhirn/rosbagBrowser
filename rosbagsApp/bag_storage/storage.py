@@ -87,11 +87,13 @@ class ROSBag:
         return self.metadata
 
     @cached_property
-    def topics(self) -> list[(str, str)]:
+    def topics(self) -> list[TopicRecordingInfo]:
         """List (name, type) of topics in bag"""
         topics = []
         with rb.Reader(self.path) as reader:
             for connection in reader.connections:
+                # thumbs = [Path(p) for p in self.__topic_metadata().get("thumbnails", {}).get(connection.topic, [])]
+                # topics.append(TopicRecordingInfo(connection.topic, connection.msgtype, thumbs, connection.msgcount))
                 topics.append((connection.topic, connection.msgtype))
         return topics
 
