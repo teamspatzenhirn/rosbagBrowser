@@ -35,8 +35,8 @@
         <li>Duration: {{ bag.duration }}</li>
         <li> Topics:
             <ul>
-                {% for name, type in bag.topics %}
-                    <li>{{ name }} ({{ type }})</li>
+                {% for topic in bag.topics %}
+                    <li>{{ topic.name }} ({{ topic.type }})</li>
                 {% endfor %}
             </ul>
         </li>
@@ -60,19 +60,19 @@
 
     <h2>Topics</h2>
     <div class="row">
-        {% for name, type in bag.topics %}
+        {% for topic in bag.topics %}
             <div class="col">
                 <div class="card h-100">
 
                     <div class="card-body">
-                        <h6 class="card-title">{{ name }}</h6>
+                        <h6 class="card-title">{{ topic.name }}</h6>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">{{ type }}</li>
-                        <li class="list-group-item">N messages (TODO)</li>
+                        <li class="list-group-item">{{ topic.type }}</li>
+                        <li class="list-group-item">{{ topic.nr_of_messages }} messages</li>
                     </ul>
                     <div class="card-body">
-                        <p class="card-text">Some more info (TODO)</p>
+                        <p class="card-text">Thumbnails: {{ topic.thumbnails }}</p>
                     </div>
                 </div>
             </div>

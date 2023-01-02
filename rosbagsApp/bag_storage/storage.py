@@ -95,9 +95,8 @@ class ROSBag:
         topics = []
         with rb.Reader(self.path) as reader:
             for connection in reader.connections:
-                # thumbs = [Path(p) for p in self.__topic_metadata().get("thumbnails", {}).get(connection.topic, [])]
-                # topics.append(TopicRecordingInfo(connection.topic, connection.msgtype, thumbs, connection.msgcount))
-                topics.append((connection.topic, connection.msgtype))
+                thumbs = [Path(p) for p in self.__topic_metadata().get("thumbnails", {}).get(connection.topic, [])]
+                topics.append(TopicRecordingInfo(connection.topic, connection.msgtype, thumbs, connection.msgcount))
         return topics
 
     @property
@@ -128,7 +127,7 @@ class ROSBag:
         """Dict representation for serializing to json, intended for displaying in frontend -> used by JS"""
         # TODO: Move formatting etc. into the view (client side?)
         return {"name": self.name,
-                "topics": [{"name": n, "type": t} for n, t in self.topics],
+                "topics": [{"name": t.name, "type": t.type} for t in self.topics],
                 "date": self.recording_date.strftime("%Y %b. %d, %H:%M"),
                 "duration": str(self.duration),
                 "tags": self.tags,
