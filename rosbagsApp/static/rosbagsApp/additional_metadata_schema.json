@@ -13,6 +13,10 @@
       "description": "Identification of the specific robot used to record the bag.",
       "type": "string"
     },
+    "location": {
+      "description": "Location at which the bag was recorded.",
+      "type": "string"
+    },
     "tags": {
       "description": "List of tags for filtering ROS bags.",
       "type": "array",
