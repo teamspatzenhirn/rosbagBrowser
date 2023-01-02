@@ -71,7 +71,7 @@ ROSBAG_MOUNT_PATH = "/mnt/rosbags"  # Path at which a user accesses ROS bags
 The site is currently configured to use sqlite. The database does not store any data related to the ROS bags, but only
 temporary information such as user-sessions and local user accounts (only used for initial admin access, all other users
 login via GitLab).
-It is not required to back up the database, and i have not found a use to even persist it across server restarts.
+It is not required to back up the database, and I have not found a use to even persist it across server restarts.
 All data relevant to the ROS bags is stored in the bag directory.
 To initially create the database, run the migrations:
 
@@ -85,7 +85,7 @@ foo@bar:~$ ./manage.py migrate
 
 I deployed the staging site at [rosbag-browser-staging.jonasotto.com](https://rosbag-browser-staging.jonasotto.com)
 using gunicorn and nginx, mainly following the
-[tutorial for django deployment](https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-22-049)
+[tutorial for django deployment](https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-22-04)
 and the
 [tutorial for nginx+letsencrypt](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04)
 from DigitalOcean.
@@ -169,6 +169,7 @@ After = network.target
 User = ubuntu
 Group = www-data
 WorkingDirectory = /home/ubuntu/rosbagBrowser
+Environment = DJANGO_SETTINGS_MODULE=rosbagBrowser.settings_staging
 ExecStart = /home/ubuntu/rosbagBrowser/.venv/bin/gunicorn \
             --access-logfile - \
             --bind unix:/run/gunicorn.sock \
@@ -209,3 +210,7 @@ above.
 ```console
 foo@bar:~$ sudo certbot --nginx -d rosbag-browser-staging.jonasotto.com -d www.rosbag-browser-staging.jonasotto.com
 ```
+
+### Database
+
+I skipped the postgresql steps in the tutorial and used the default sqlite config.
