@@ -23,7 +23,24 @@
       "items": {
         "type": "string"
       },
-      "uniqueItems": true
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "thumbnails": {
+      "type": "object",
+      "description": "List of thumbnails for each topic",
+      "propertyNames": {
+        "description": "Topic name"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "description": "Path to thumbnail",
+          "type": "string",
+          "pattern": "^[\\w-_\\.]+$"
+        }
+      }
     }
   },
   "required": [
