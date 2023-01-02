@@ -89,7 +89,7 @@ class ROSBag:
         """List of tags in additional metadata file"""
         if not hasattr(self, 'metadata'):
             return []
-        return self.metadata['tags']
+        return self.metadata.get('tags', [])
 
     def thumbnails(self) -> list[str]:
         """Filenames of available thumbnails (in bag_name/thumbnails/ directory)"""

@@ -25,7 +25,6 @@
   "required": [
     "description",
     "hardware",
-    "tags",
     "location"
   ]
 }
