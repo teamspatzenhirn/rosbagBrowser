@@ -214,3 +214,10 @@ foo@bar:~$ sudo certbot --nginx -d rosbag-browser-staging.jonasotto.com -d www.r
 ### Database
 
 I skipped the postgresql steps in the tutorial and used the default sqlite config.
+
+### Configuration
+
+For deployment, the django `SECRET_KEY` should be changed. This can be done in `.env` as with the GitLab keys above.
+The django settings for staging are configured in `rosbagBrowser.settings_staging` and can be used with the
+`--settings rosbagBrowser.settings_staging` flag for `manage.py` or via environment variable
+`DJANGO_SETTINGS_MODULE=rosbagBrowser.settings_staging`.
