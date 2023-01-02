@@ -21,6 +21,21 @@ class ListViewTests(TestCase):
         self.assertRedirects(response, reverse("login") + "?next=" + reverse("rosbags:list"))
 
 
+class DetailViewTests(TestCase):
+    def setUp(self):
+        self.test_user = get_user_model().objects.create_user("temporary")
+
+    def test_detail_no_error(self):
+        self.client.force_login(self.test_user)
+        response = self.client.get(reverse("rosbags:detail", args=["unit_test_bag"]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_detail_needs_authentication(self):
+        url = reverse("rosbags:detail", args=["unit_test_bag"])
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse("login") + "?next=" + url)
+
+
 class MetadataStorageTests(TestCase):
     def test_topic_metadata(self):
         bs = BagStorage()
