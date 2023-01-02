@@ -38,7 +38,7 @@
         "items": {
           "description": "Path to thumbnail",
           "type": "string",
-          "pattern": "^[\\w-_\\.]+$"
+          "pattern": "^[\\w\\-_\\.]+$"
         }
       }
     }
