@@ -1,6 +1,8 @@
 import datetime
 import json
 import os
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional, Generator
 
 import rosbags.rosbag2 as rb
@@ -22,6 +24,17 @@ def is_rosbag(path: str):
     if os.path.exists(os.path.join(path, "metadata.yaml")):
         return True
     return False
+
+
+@dataclass(frozen=True)
+class TopicRecordingInfo:
+    """
+    Metadata about a topic which has been recorded in a ROS bag
+    """
+    name: str
+    type: str
+    thumbnails: list[Path]
+    nr_of_messages: int
 
 
 class ROSBag:
@@ -67,6 +80,11 @@ class ROSBag:
     def duration(self) -> datetime.timedelta:
         with rb.Reader(self.path) as reader:
             return datetime.timedelta(microseconds=reader.duration // 1000)
+
+    def __topic_metadata(self):
+        if not hasattr(self, 'metadata'):
+            return {}
+        return self.metadata
 
     @cached_property
     def topics(self) -> list[(str, str)]:
