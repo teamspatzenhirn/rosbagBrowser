@@ -20,8 +20,8 @@ with open(additional_metadata_schema_location, 'r') as schema_file:
     additional_metadata_schema = json.load(schema_file)
 
 
-def is_rosbag(path: str):
-    if os.path.exists(os.path.join(path, "metadata.yaml")):
+def is_rosbag(path: Path):
+    if (path / "metadata.yaml").exists():
         return True
     return False
 
@@ -46,8 +46,8 @@ class ROSBag:
      Would opening the reader only once be faster?
     """
 
-    def __init__(self, base_path: str, dir_name: str):
-        self.path = os.path.realpath(os.path.join(base_path, dir_name))
+    def __init__(self, base_path: Path, dir_name: str):
+        self.path = (base_path / dir_name).resolve()
         assert (is_rosbag(self.path))
         self.base_path = base_path
         self.dir_name = dir_name
@@ -136,14 +136,14 @@ class BagStorage:
         """
         :param path: Directory containing ROS bags. Defaults to configured path from ROSBAG_STORAGE_PATH setting
         """
-        self.base_path = path
+        self.base_path = Path(path).resolve()
 
     def __iter__(self) -> Generator[ROSBag, None, None]:
         """
         Iterating over the BagStorage yields all bags in configured directory
         """
         for entry in os.scandir(self.base_path):
-            if entry.is_dir() and is_rosbag(entry.path):
+            if entry.is_dir() and is_rosbag(Path(entry.path)):
                 yield ROSBag(self.base_path, entry.name)
 
     def find(self, name: str) -> Optional[ROSBag]:
@@ -152,7 +152,12 @@ class BagStorage:
         :param name: Name of the ROS bag (directory)
         :return: ROS bag with specified name, or None if not found
         """
-        path = os.path.join(self.base_path, name)
+        path = (self.base_path / name).resolve()
+
+        if Path(os.path.commonpath([path, self.base_path])) != self.base_path:
+            # Path must be below the base path, to prevent accessing outside directories
+            return None
+
         if not is_rosbag(path):
             return None
         return ROSBag(self.base_path, name)
