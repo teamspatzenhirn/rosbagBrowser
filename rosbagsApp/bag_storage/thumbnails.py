@@ -38,9 +38,10 @@ def create_thumbnail_image(bag_dir: Path, reader: rb.Reader, connection: rb.read
 
 def create_thumbnail_spatz(bag_dir: Path, reader: rb.Reader, connection: rb.reader.Connection) -> set[str]:
     """
-    This is just an example of how thumbnail generation might work. We still have to figure out how (if) we want to
-    provide custom message types and thumbnail generators. The next step however will be to implement this for well
-    known, useful types (like sensor_msgs/Image, which is implemented above).
+    This is just an example of how thumbnail generation might work.
+    TODO: We still have to figure out how (if) we want to provide custom message types and thumbnail generators.
+    The next step however will be to implement this for well known, useful types (like sensor_msgs/Image, which is
+    implemented above).
 
     :return: List of filenames of generated thumbnails
     """
