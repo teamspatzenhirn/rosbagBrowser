@@ -30,6 +30,11 @@ class DetailViewTests(TestCase):
         response = self.client.get(reverse("rosbags:detail", args=["unit_test_bag"]))
         self.assertEqual(response.status_code, 200)
 
+    def test_detail_no_error_without_metadata(self):
+        self.client.force_login(self.test_user)
+        response = self.client.get(reverse("rosbags:detail", args=["bag_without_metadata"]))
+        self.assertEqual(response.status_code, 200)
+
     def test_detail_needs_authentication(self):
         url = reverse("rosbags:detail", args=["unit_test_bag"])
         response = self.client.get(url)

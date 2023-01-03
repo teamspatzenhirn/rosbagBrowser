@@ -57,6 +57,8 @@ class ROSBag:
             with open(metadata_path, 'r') as metadata_file:
                 self.metadata = json.load(metadata_file)
             validate(self.metadata, additional_metadata_schema)
+        else:
+            self.metadata = None
 
     @property
     def name(self):
@@ -84,34 +86,25 @@ class ROSBag:
         with rb.Reader(self.path) as reader:
             return datetime.timedelta(microseconds=reader.duration // 1000)
 
-    def __topic_metadata(self):
-        if not hasattr(self, 'metadata'):
-            return {}
-        return self.metadata
-
     @cached_property
     def topics(self) -> list[TopicRecordingInfo]:
         """List (name, type) of topics in bag"""
         topics = []
         with rb.Reader(self.path) as reader:
             for connection in reader.connections:
-                thumbs = [Path(p) for p in self.__topic_metadata().get("thumbnails", {}).get(connection.topic, [])]
+                thumbs = [Path(p) for p in (self.metadata or {}).get("thumbnails", {}).get(connection.topic, [])]
                 topics.append(TopicRecordingInfo(connection.topic, connection.msgtype, thumbs, connection.msgcount))
         return topics
 
     @property
     def description(self) -> str:
         """Description from external metadata"""
-        if not hasattr(self, 'metadata'):
-            return ""
-        return self.metadata['description']
+        return (self.metadata or {}).get('description', "")
 
     @property
     def tags(self) -> list[str]:
         """List of tags in additional metadata file"""
-        if not hasattr(self, 'metadata'):
-            return []
-        return self.metadata.get('tags', [])
+        return (self.metadata or {}).get('tags', [])
 
     def thumbnails(self) -> list[str]:
         """Filenames of available thumbnails (in bag_name/thumbnails/ directory)"""
