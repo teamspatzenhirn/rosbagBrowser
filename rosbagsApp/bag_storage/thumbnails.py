@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import cv2
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,13 +8,39 @@ import rosbags.rosbag2 as rb
 from django.utils.text import slugify
 from rosbags.serde import deserialize_cdr
 from rosbags.typesys import get_types_from_msg, register_types
+from rosbags.typesys.types import sensor_msgs__msg__Image as Image
+
+
+def ros_encoding_to_opencv(ros_encoding: str):
+    if ros_encoding == "bayer_rggb8":
+        return cv2.COLOR_BAYER_RGGB2BGR
+    else:
+        raise NotImplementedError(f"OpenCV conversion for {ros_encoding} not specified")
+
+
+def create_thumbnail_image(bag_dir: Path, reader: rb.Reader, connection: rb.reader.Connection) -> set[str]:
+    assert (connection.msgtype == Image.__msgtype__)
+    (_, timestamp, rawdata) = next(reader.messages([connection]))
+    msg: Image = deserialize_cdr(rawdata, connection.msgtype)
+
+    data = np.reshape(msg.data, (msg.height, msg.width))
+    color = cv2.cvtColor(data, ros_encoding_to_opencv(msg.encoding))
+
+    thumb_name = slugify(connection.topic) + ".png"
+    thumb_dir = bag_dir / "thumbnails"
+    thumb_dir.mkdir(exist_ok=True)
+
+    success = cv2.imwrite(str(thumb_dir / thumb_name), color)
+    if not success:
+        raise RuntimeError("Writing image using OpenCV failed.")
+    return {thumb_name}
 
 
 def create_thumbnail_spatz(bag_dir: Path, reader: rb.Reader, connection: rb.reader.Connection) -> set[str]:
     """
     This is just an example of how thumbnail generation might work. We still have to figure out how (if) we want to
     provide custom message types and thumbnail generators. The next step however will be to implement this for well
-    known, useful types (sensor_msgs/Image for example).
+    known, useful types (like sensor_msgs/Image, which is implemented above).
 
     :return: List of filenames of generated thumbnails
     """

@@ -9,7 +9,7 @@ from django.utils.functional import cached_property
 
 import rosbagsApp.settings
 from rosbagsApp.bag_storage.additional_metadata import AdditionalMetadata, additional_metadata_file_name
-from rosbagsApp.bag_storage.thumbnails import create_thumbnail_spatz
+from rosbagsApp.bag_storage.thumbnails import create_thumbnail_spatz, create_thumbnail_image
 
 
 def is_rosbag(path: Path):
@@ -109,6 +109,8 @@ class ROSBag:
             for connection in reader.connections:
                 if connection.msgtype == "spatz_interfaces/msg/Spatz":
                     thumbnails[connection.topic] = create_thumbnail_spatz(self.path, reader, connection)
+                elif connection.msgtype == "sensor_msgs/msg/Image":
+                    thumbnails[connection.topic] = create_thumbnail_image(self.path, reader, connection)
 
         for topic, thumbs in thumbnails.items():
             if len(self.metadata.thumbnails) == 0:
