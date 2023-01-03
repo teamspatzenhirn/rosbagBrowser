@@ -1,9 +1,11 @@
+import json
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
+from rosbagsApp.bag_storage.additional_metadata import AdditionalMetadata
 from rosbagsApp.bag_storage.storage import BagStorage, TopicRecordingInfo
 
 
@@ -59,3 +61,21 @@ class MetadataStorageTests(TestCase):
                                'spatz_interfaces/msg/Spatz11SensorData',
                                [],
                                123)])
+
+
+class AdditionalMetadataTests(TestCase):
+    def test_optional_items(self):
+        md = AdditionalMetadata("desc", "hw", "loc", None, [])
+        self.assertEqual(md.thumbnails, {})
+        self.assertEqual(md.tags, [])
+        json_dump = md.to_json()
+        decoded = json.loads(json_dump)
+        self.assertFalse("thumbnails" in decoded)
+        self.assertFalse("tags" in decoded)
+
+        # Explicitly set empty thumbnails dict
+        md.thumbnails = {}
+        json_dump = md.to_json()
+        decoded = json.loads(json_dump)
+        self.assertTrue("thumbnails" in decoded)
+        self.assertEqual(decoded["thumbnails"], {})

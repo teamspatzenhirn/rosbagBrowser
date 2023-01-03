@@ -1,23 +1,15 @@
 import datetime
-import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Generator
 
 import rosbags.rosbag2 as rb
-from django.contrib.staticfiles import finders
 from django.utils.functional import cached_property
-from jsonschema import validate
 
 import rosbagsApp.settings
-
-additional_metadata_file_name = "additional_metadata.json"
-
-additional_metadata_schema_location = finders.find("rosbagsApp/additional_metadata_schema.json")
-
-with open(additional_metadata_schema_location, 'r') as schema_file:
-    additional_metadata_schema = json.load(schema_file)
+from rosbagsApp.bag_storage.additional_metadata import AdditionalMetadata, additional_metadata_file_name
+from rosbagsApp.bag_storage.thumbnails import create_thumbnail_spatz
 
 
 def is_rosbag(path: Path):
@@ -54,11 +46,9 @@ class ROSBag:
 
         metadata_path = os.path.join(self.path, additional_metadata_file_name)
         if os.path.exists(metadata_path):
-            with open(metadata_path, 'r') as metadata_file:
-                self.metadata = json.load(metadata_file)
-            validate(self.metadata, additional_metadata_schema)
+            self.metadata = AdditionalMetadata.from_file(Path(metadata_path))
         else:
-            self.metadata = None
+            self.metadata = AdditionalMetadata.default()
 
     @property
     def name(self):
@@ -78,6 +68,9 @@ class ROSBag:
         # TODO: Timezones... Files all contain *seconds since epoch, which should be referring to UTC.
         #  It would probably be a fair to assume the locale of recording is the same as the one when viewing, so we
         #  should adjust timezone accordingly for display.
+
+        # TODO: Simulation time. Simulation time often begins close to 0, and the bag does not seem to contain any
+        #  wallclock timestamp at all. Maybe introduce additional timestamp in additional_metadata.json?
         with rb.Reader(self.path) as reader:
             return datetime.datetime.fromtimestamp(reader.start_time // 1000000000)
 
@@ -92,19 +85,19 @@ class ROSBag:
         topics = []
         with rb.Reader(self.path) as reader:
             for connection in reader.connections:
-                thumbs = [Path(p) for p in (self.metadata or {}).get("thumbnails", {}).get(connection.topic, [])]
+                thumbs = [Path(p) for p in self.metadata.thumbnails.get(connection.topic, [])]
                 topics.append(TopicRecordingInfo(connection.topic, connection.msgtype, thumbs, connection.msgcount))
         return topics
 
     @property
     def description(self) -> str:
         """Description from external metadata"""
-        return (self.metadata or {}).get('description', "")
+        return self.metadata.description
 
     @property
     def tags(self) -> list[str]:
         """List of tags in additional metadata file"""
-        return (self.metadata or {}).get('tags', [])
+        return self.metadata.tags
 
     def thumbnails(self) -> list[str]:
         """Filenames of available thumbnails (in bag_name/thumbnails/ directory)"""
