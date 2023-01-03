@@ -1,10 +1,5 @@
 {
   "description": "Test bag for running unit tests",
   "hardware": "mock_robot",
-  "location": "unittest",
-  "thumbnails": {
-    "/spatz11/sensor_data": [
-      "_spatz11_sensor_data.png"
-    ]
-  }
+  "location": "unittest"
 }

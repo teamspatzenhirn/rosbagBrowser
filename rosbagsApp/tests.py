@@ -1,11 +1,11 @@
 import json
-from pathlib import Path
+import os.path
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from rosbagsApp.bag_storage.additional_metadata import AdditionalMetadata
+from rosbagsApp.bag_storage.additional_metadata import AdditionalMetadata, additional_metadata_file_name
 from rosbagsApp.bag_storage.storage import BagStorage, TopicRecordingInfo
 
 
@@ -50,7 +50,7 @@ class MetadataStorageTests(TestCase):
         self.assertEqual(bag.topics, [
             TopicRecordingInfo('/spatz11/sensor_data',
                                'spatz_interfaces/msg/Spatz11SensorData',
-                               [Path("_spatz11_sensor_data.png")],
+                               set(),
                                123)])
 
     def test_bag_without_additional_metadata_topics(self):
@@ -59,7 +59,7 @@ class MetadataStorageTests(TestCase):
         self.assertEqual(bag.topics, [
             TopicRecordingInfo('/spatz11/sensor_data',
                                'spatz_interfaces/msg/Spatz11SensorData',
-                               [],
+                               set(),
                                123)])
 
 
@@ -79,3 +79,27 @@ class AdditionalMetadataTests(TestCase):
         decoded = json.loads(json_dump)
         self.assertTrue("thumbnails" in decoded)
         self.assertEqual(decoded["thumbnails"], {})
+
+
+class ThumbnailGeneration(TestCase):
+    def test_create_thumbnail_states(self):
+        bs = BagStorage()
+        bag = bs.find("test_state_only")
+        expected_thumb_path = bag.path / "thumbnails" / "spatz.png"
+        if os.path.exists(expected_thumb_path):
+            os.remove(expected_thumb_path)
+
+        amd_path = bag.path / additional_metadata_file_name
+        amd = amd_path.read_text()
+
+        bag.generate_thumbnails()
+        self.assertEqual(bag.metadata.thumbnails, {"/spatz": {"spatz.png"}})
+        self.assertTrue(os.path.exists(expected_thumb_path))
+        # Verify metadata written to file
+        new_amd = AdditionalMetadata.from_file(amd_path)
+        self.assertEqual(new_amd.thumbnails, {"/spatz": {"spatz.png"}})
+
+        # Cleanup: restore metadata, delete thumbnail
+        if os.path.exists(expected_thumb_path):
+            os.remove(expected_thumb_path)
+        amd_path.write_text(amd)

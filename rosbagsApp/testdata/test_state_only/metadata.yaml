@@ -1,0 +1,26 @@
+rosbag2_bagfile_information:
+  version: 5
+  storage_identifier: sqlite3
+  duration:
+    nanoseconds: 3199999928
+  starting_time:
+    nanoseconds_since_epoch: 47499998938
+  message_count: 640
+  topics_with_message_count:
+    - topic_metadata:
+        name: /spatz
+        type: spatz_interfaces/msg/Spatz
+        serialization_format: cdr
+        offered_qos_profiles: "- history: 3\n  depth: 0\n  reliability: 1\n  durability: 2\n  deadline:\n    sec: 9223372036\n    nsec: 854775807\n  lifespan:\n    sec: 9223372036\n    nsec: 854775807\n  liveliness: 3\n  liveliness_lease_duration:\n    sec: 0\n    nsec: 100000000\n  avoid_ros_namespace_conventions: false"
+      message_count: 640
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - test_state_only_0.db3
+  files:
+    - path: test_state_only_0.db3
+      starting_time:
+        nanoseconds_since_epoch: 47499998938
+      duration:
+        nanoseconds: 3199999928
+      message_count: 640

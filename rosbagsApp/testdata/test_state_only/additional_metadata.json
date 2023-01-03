@@ -1,0 +1,5 @@
+{
+  "description": "Driving along s-curve in simulator",
+  "hardware": "simulated_spatz11",
+  "location": "simulator"
+}

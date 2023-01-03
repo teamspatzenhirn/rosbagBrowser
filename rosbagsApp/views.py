@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, HttpResponseBadRequest
+from django.http import FileResponse, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
 
 import rosbagsApp.settings
@@ -43,3 +43,17 @@ def thumbnail(request, bag_name: str, thumb_name: str):
     if Path(os.path.commonpath([path, bag.path])) != bag.path:
         return HttpResponseBadRequest(f"Thumbnail path outside bag directory: {path}")
     return FileResponse(open(path, 'rb'))
+
+
+def generate_thumbnails(request):
+    bag_name = request.GET.get("bag_name", None)
+    if bag_name is None:
+        return HttpResponseBadRequest("Parameter bag_name is required.")
+    bs = BagStorage()
+    bag = bs.find(bag_name)
+    if bag is None:
+        return HttpResponseBadRequest(f"Bag with name\"{bag_name}\" is not found.")
+
+    bag.generate_thumbnails()
+
+    return HttpResponse("done!")

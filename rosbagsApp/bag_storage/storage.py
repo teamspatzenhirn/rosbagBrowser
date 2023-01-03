@@ -25,7 +25,7 @@ class TopicRecordingInfo:
     """
     name: str
     type: str
-    thumbnails: list[Path]
+    thumbnails: set[str]
     nr_of_messages: int
 
 
@@ -85,7 +85,7 @@ class ROSBag:
         topics = []
         with rb.Reader(self.path) as reader:
             for connection in reader.connections:
-                thumbs = [Path(p) for p in self.metadata.thumbnails.get(connection.topic, [])]
+                thumbs = self.metadata.thumbnails.get(connection.topic, set())
                 topics.append(TopicRecordingInfo(connection.topic, connection.msgtype, thumbs, connection.msgcount))
         return topics
 
@@ -99,15 +99,27 @@ class ROSBag:
         """List of tags in additional metadata file"""
         return self.metadata.tags
 
-    def thumbnails(self) -> list[str]:
-        """Filenames of available thumbnails (in bag_name/thumbnails/ directory)"""
-        res = []
-        thumbnail_dir = os.path.join(self.path, "thumbnails")
-        if os.path.exists(thumbnail_dir) and os.path.isdir(thumbnail_dir):
-            for entry in os.scandir(thumbnail_dir):
-                if entry.is_file():
-                    res.append(entry.name)
-        return res
+    def thumbnails(self) -> dict[str, set[str]]:
+        """Available thumbnails as specified in metadata"""
+        return self.metadata.thumbnails
+
+    def generate_thumbnails(self):
+        thumbnails = {}
+        with rb.Reader(self.path) as reader:
+            for connection in reader.connections:
+                if connection.msgtype == "spatz_interfaces/msg/Spatz":
+                    thumbnails[connection.topic] = create_thumbnail_spatz(self.path, reader, connection)
+
+        for topic, thumbs in thumbnails.items():
+            if len(self.metadata.thumbnails) == 0:
+                self.metadata.thumbnails = {topic: thumbs}
+            else:
+                thumbs = self.metadata.thumbnails.get(topic, set())
+                thumbs.update(thumbs)
+                self.metadata.thumbnails[topic] = thumbs
+        json_dump = self.metadata.to_json()
+        with open(os.path.join(self.path, additional_metadata_file_name), 'w') as file:
+            file.write(json_dump)
 
     def json(self) -> dict:
         """Dict representation for serializing to json, intended for displaying in frontend -> used by JS"""

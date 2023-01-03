@@ -27,6 +27,8 @@
         </button>
     </div>
 
+    <a href="{% url "rosbags:generate_thumbnails" %}?bag_name={{ bag.name }}">Create Thumbnails (WIP)</a>
+
     <h2>Metadata</h2>
 
     <ul>
@@ -49,8 +51,15 @@
         </li>
         <li> Thumbnails:
             <ul>
-                {% for tn in bag.thumbnails %}
-                    <li><a href="{% url "rosbags:thumbnail" bag.name tn %}">{{ tn }}</a></li>
+                {% for topic, thumbs in bag.thumbnails.items %}
+                    <li>
+                        {{ topic }}:
+                        <ul>
+                            {% for tn in thumbs %}
+                                <li><a href="{% url "rosbags:thumbnail" bag.name tn %}">{{ tn }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
                 {% endfor %}
             </ul>
         </li>
@@ -81,15 +90,17 @@
 
     <h2>Thumbnails</h2>
     <div class="row">
-        {% for tn in bag.thumbnails %}
-            <div class="col">
-                <div class="card h-100">
-                    <img src="{% url "rosbags:thumbnail" bag.name tn %}" class="card-img-top" alt="{{ tn }}">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ tn }}</h6>
+        {% for topic, thumbs in bag.thumbnails.items %}
+            {% for tn in thumbs %}
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="{% url "rosbags:thumbnail" bag.name tn %}" class="card-img-top" alt="{{ tn }}">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ tn }}</h6>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endfor %}
         {% endfor %}
     </div>
 
