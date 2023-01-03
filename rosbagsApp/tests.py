@@ -50,3 +50,12 @@ class MetadataStorageTests(TestCase):
                                'spatz_interfaces/msg/Spatz11SensorData',
                                [Path("_spatz11_sensor_data.png")],
                                123)])
+
+    def test_bag_without_additional_metadata_topics(self):
+        bs = BagStorage()
+        bag = bs.find("bag_without_metadata")
+        self.assertEqual(bag.topics, [
+            TopicRecordingInfo('/spatz11/sensor_data',
+                               'spatz_interfaces/msg/Spatz11SensorData',
+                               [],
+                               123)])
