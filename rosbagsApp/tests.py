@@ -90,7 +90,6 @@ class ThumbnailGeneration(TestCase):
             os.remove(expected_thumb_path)
 
         amd_path = bag.path / additional_metadata_file_name
-        amd = amd_path.read_text()
 
         bag.generate_thumbnails()
         self.assertEqual(bag.metadata.thumbnails, {"/spatz": {"spatz.png"}})
@@ -102,4 +101,5 @@ class ThumbnailGeneration(TestCase):
         # Cleanup: restore metadata, delete thumbnail
         if os.path.exists(expected_thumb_path):
             os.remove(expected_thumb_path)
-        amd_path.write_text(amd)
+        new_amd.thumbnails = None
+        amd_path.write_text(new_amd.to_json())
