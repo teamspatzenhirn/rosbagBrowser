@@ -92,5 +92,5 @@ class AdditionalMetadata:
     @staticmethod
     def default() -> 'AdditionalMetadata':
         # TODO: Make more (all) fields optional, to enable creating thumbnails without setting empty values for other
-        #  metadata
+        #  metadata (https://github.com/teamspatzenhirn/rosbagBrowser/issues/3)
         return AdditionalMetadata("", "", "", None, ["no_metadata"])

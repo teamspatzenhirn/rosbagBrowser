@@ -67,10 +67,11 @@ class ROSBag:
         """Date and time of recording start"""
         # TODO: Timezones... Files all contain *seconds since epoch, which should be referring to UTC.
         #  It would probably be a fair to assume the locale of recording is the same as the one when viewing, so we
-        #  should adjust timezone accordingly for display.
+        #  should adjust timezone accordingly for display. (https://github.com/teamspatzenhirn/rosbagBrowser/issues/4)
 
         # TODO: Simulation time. Simulation time often begins close to 0, and the bag does not seem to contain any
         #  wallclock timestamp at all. Maybe introduce additional timestamp in additional_metadata.json?
+        #  (https://github.com/teamspatzenhirn/rosbagBrowser/issues/5)
         with rb.Reader(self.path) as reader:
             return datetime.datetime.fromtimestamp(reader.start_time // 1000000000)
 

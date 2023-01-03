@@ -40,6 +40,7 @@ def create_thumbnail_spatz(bag_dir: Path, reader: rb.Reader, connection: rb.read
     """
     This is just an example of how thumbnail generation might work.
     TODO: We still have to figure out how (if) we want to provide custom message types and thumbnail generators.
+    (https://github.com/teamspatzenhirn/rosbagBrowser/issues/6)
     The next step however will be to implement this for well known, useful types (like sensor_msgs/Image, which is
     implemented above).
 
