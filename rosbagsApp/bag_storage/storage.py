@@ -114,9 +114,10 @@ class ROSBag:
             if len(self.metadata.thumbnails) == 0:
                 self.metadata.thumbnails = {topic: thumbs}
             else:
-                thumbs = self.metadata.thumbnails.get(topic, set())
-                thumbs.update(thumbs)
-                self.metadata.thumbnails[topic] = thumbs
+                md_thumbs = self.metadata.thumbnails.get(topic, set())
+                md_thumbs.update(thumbs)
+                self.metadata.thumbnails[topic] = md_thumbs
+
         json_dump = self.metadata.to_json()
         with open(os.path.join(self.path, additional_metadata_file_name), 'w') as file:
             file.write(json_dump)
