@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponseBadRequest
@@ -39,6 +40,6 @@ def thumbnail(request, bag_name: str, thumb_name: str):
     bag = BagStorage().find(bag_name)
     path = os.path.join(bag.path, "thumbnails", thumb_name)
     path = os.path.realpath(path)
-    if os.path.commonpath([path, bag.path]) != bag.path:
+    if Path(os.path.commonpath([path, bag.path])) != bag.path:
         return HttpResponseBadRequest(f"Thumbnail path outside bag directory: {path}")
     return FileResponse(open(path, 'rb'))
