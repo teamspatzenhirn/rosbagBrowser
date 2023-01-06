@@ -30,7 +30,7 @@ class DetailViewTests(TestCase):
     def test_detail_no_error(self):
         self.client.force_login(self.test_user)
         test_bag_list = ["bag_without_metadata", "test_state_only", "test_state_only", "test_state_only_with_thumbs",
-                         "unit_test_bag"]
+                         "unit_test_bag", "unit_test_bag_minimal_metadata"]
         for bag in test_bag_list:
             response = self.client.get(reverse("rosbags:detail", args=[bag]))
             self.assertEqual(response.status_code, 200, msg=f"bag name: {bag}")
