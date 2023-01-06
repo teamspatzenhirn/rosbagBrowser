@@ -47,7 +47,6 @@ def create_thumbnail_spatz(bag_dir: Path, reader: rb.Reader, connection: rb.read
     :return: List of filenames of generated thumbnails
     """
     assert (connection.msgtype == "spatz_interfaces/msg/Spatz")
-    print("Creating thumbs")
     register_types(get_types_from_msg("""
             float64 width
             float64 length
