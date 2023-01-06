@@ -103,3 +103,12 @@ class ThumbnailGeneration(TestCase):
             os.remove(expected_thumb_path)
         new_amd.thumbnails = None
         amd_path.write_text(new_amd.to_json())
+
+
+class SimulationTimeTests(TestCase):
+    def test_identify_simulation_time(self):
+        bs = BagStorage()
+        bag = bs.find("test_state_only")
+        self.assertTrue(bag.is_simulation_time)
+        bag = bs.find("unit_test_bag")
+        self.assertFalse(bag.is_simulation_time)

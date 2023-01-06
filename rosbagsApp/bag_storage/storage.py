@@ -76,6 +76,16 @@ class ROSBag:
             return datetime.datetime.fromtimestamp(reader.start_time // 1000000000)
 
     @cached_property
+    def is_simulation_time(self) -> bool:
+        """
+        Tries to determine if the timestamps in the ros bag are using simulation time, which usually starts at 0, and
+        does not make sense when interpreted as time since epoch
+        """
+        if self.recording_date.year < 2000:
+            return True
+        return False
+
+    @cached_property
     def duration(self) -> datetime.timedelta:
         with rb.Reader(self.path) as reader:
             return datetime.timedelta(microseconds=reader.duration // 1000)
