@@ -1,3 +1,4 @@
+import datetime
 import json
 import os.path
 
@@ -30,7 +31,8 @@ class DetailViewTests(TestCase):
     def test_detail_no_error(self):
         self.client.force_login(self.test_user)
         test_bag_list = ["bag_without_metadata", "test_state_only", "test_state_only", "test_state_only_with_thumbs",
-                         "unit_test_bag", "unit_test_bag_minimal_metadata"]
+                         "unit_test_bag", "unit_test_bag_minimal_metadata", "unit_test_bag_recording_time",
+                         "unit_test_bag_recording_time_with_tz"]
         for bag in test_bag_list:
             response = self.client.get(reverse("rosbags:detail", args=[bag]))
             self.assertEqual(response.status_code, 200, msg=f"bag name: {bag}")
@@ -82,6 +84,20 @@ class AdditionalMetadataTests(TestCase):
         decoded = json.loads(json_dump)
         # Empty thumbnail list should not be encoded
         self.assertFalse("thumbnails" in decoded)
+
+    def test_recording_time(self):
+        bs = BagStorage()
+        bag = bs.find("unit_test_bag_recording_time")
+        self.assertEqual(bag.recording_date, datetime.datetime(2023, 1, 6, 18, 41, 1, tzinfo=datetime.timezone.utc))
+
+    def test_recording_time_with_tz(self):
+        bs = BagStorage()
+        bag = bs.find("unit_test_bag_recording_time_with_tz")
+        self.assertEqual(bag.recording_date, datetime.datetime(2023, 1, 6, 18, 41, 1, tzinfo=datetime.timezone.utc))
+        self.assertEqual(bag.recording_date,
+                         datetime.datetime(2023, 1, 6, 19, 41, 1,
+                                           tzinfo=datetime.timezone(datetime.timedelta(hours=1))))
+        self.assertEqual(bag.recording_date.tzinfo, datetime.timezone(datetime.timedelta(hours=1)))
 
 
 class ThumbnailGeneration(TestCase):
