@@ -29,8 +29,11 @@ class DetailViewTests(TestCase):
 
     def test_detail_no_error(self):
         self.client.force_login(self.test_user)
-        response = self.client.get(reverse("rosbags:detail", args=["unit_test_bag"]))
-        self.assertEqual(response.status_code, 200)
+        test_bag_list = ["bag_without_metadata", "test_state_only", "test_state_only", "test_state_only_with_thumbs",
+                         "unit_test_bag"]
+        for bag in test_bag_list:
+            response = self.client.get(reverse("rosbags:detail", args=[bag]))
+            self.assertEqual(response.status_code, 200, msg=f"bag name: {bag}")
 
     def test_detail_no_error_without_metadata(self):
         self.client.force_login(self.test_user)
@@ -77,8 +80,8 @@ class AdditionalMetadataTests(TestCase):
         md.thumbnails = {}
         json_dump = md.to_json()
         decoded = json.loads(json_dump)
-        self.assertTrue("thumbnails" in decoded)
-        self.assertEqual(decoded["thumbnails"], {})
+        # Empty thumbnail list should not be encoded
+        self.assertFalse("thumbnails" in decoded)
 
 
 class ThumbnailGeneration(TestCase):

@@ -43,38 +43,38 @@ class AdditionalMetadata:
     Python class representing additional_metadata.json
     """
 
-    def __init__(self, description: str, hardware: str, location: str, thumbnails: dict[str, set[str]] | None,
-                 tags: list[str]):
+    def __init__(self, description: str | None = None, hardware: str | None = None, location: str | None = None,
+                 thumbnails: dict[str, set[str]] = None,
+                 tags: list[str] = None):
         self.description = description
         self.hardware = hardware
         self.location = location
-        self.__thumbnails = thumbnails
+        # In json we do not distinguish between empty or missing thumbnails/tags (we require >0 entries)
+        self.thumbnails = thumbnails
+        if thumbnails is None:
+            self.thumbnails = {}
         self.tags = tags
-
-        if len(tags) != len(set(tags)):
-            raise RuntimeError(f"Tags in AdditionalMetadata must be unique. Tags given: {tags}")
-
-    @property
-    def thumbnails(self) -> dict[str, set[str]]:
-        # For convenience, this property returns empty list, even if thumbnails are explicitly not set.
-        # Internally, the state is preserved.
-        return self.__thumbnails or {}
-
-    @thumbnails.setter
-    def thumbnails(self, new_thumbnails: dict[str, set[str]] | None):
-        self.__thumbnails = new_thumbnails
+        if tags is None:
+            self.tags = []
+        else:
+            if len(tags) != len(set(tags)):
+                raise RuntimeError(f"Tags in AdditionalMetadata must be unique. Tags given: {tags}")
 
     def to_json(self) -> str:
-        self_dict = {
-            "description": self.description,
-            "hardware": self.hardware,
-            "location": self.location
-        }
+        self_dict = {}
 
-        # Thumbnails are optional, and we want to preserve the empty vs not-set state
-        if self.__thumbnails is not None:
-            self_dict["thumbnails"] = thumbnails_to_lists(self.__thumbnails)
-        # Do not encode empty tag list
+        if self.description is not None:
+            self_dict["description"] = self.description
+
+        if self.hardware is not None:
+            self_dict["hardware"] = self.hardware
+
+        if self.location is not None:
+            self_dict["location"] = self.location
+
+        if self.thumbnails is not None and len(self.thumbnails) > 0:
+            self_dict["thumbnails"] = thumbnails_to_lists(self.thumbnails)
+
         if len(self.tags) > 0:
             self_dict["tags"] = self.tags
 
@@ -86,8 +86,8 @@ class AdditionalMetadata:
         with open(path, 'r') as metadata_file:
             metadata = json.load(metadata_file)
         validate(metadata, additional_metadata_schema)
-        return AdditionalMetadata(metadata["description"], metadata["hardware"], metadata["location"],
-                                  thumbnails_to_sets(metadata.get("thumbnails", None)), metadata.get("tags", []))
+        return AdditionalMetadata(metadata.get("description"), metadata.get("hardware"), metadata.get("location"),
+                                  thumbnails_to_sets(metadata.get("thumbnails")), metadata.get("tags", []))
 
     @staticmethod
     def default() -> 'AdditionalMetadata':
