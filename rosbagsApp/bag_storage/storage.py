@@ -65,15 +65,17 @@ class ROSBag:
     @cached_property
     def recording_date(self) -> datetime.datetime:
         """Date and time of recording start"""
-        # TODO: Timezones... Files all contain *seconds since epoch, which should be referring to UTC.
+        # TODO: Timezones... Files all contain *seconds since epoch, which are referring to UTC.
         #  It would probably be a fair to assume the locale of recording is the same as the one when viewing, so we
         #  should adjust timezone accordingly for display. (https://github.com/teamspatzenhirn/rosbagBrowser/issues/4)
+        #  The timestamp in additional metadata contains timezone info, this could be used to store recording timezone
+        #  and reproduce exactly in gui
 
-        # TODO: Simulation time. Simulation time often begins close to 0, and the bag does not seem to contain any
-        #  wallclock timestamp at all. Maybe introduce additional timestamp in additional_metadata.json?
-        #  (https://github.com/teamspatzenhirn/rosbagBrowser/issues/5)
+        if self.metadata.recording_time is not None:
+            return self.metadata.recording_time
+
         with rb.Reader(self.path) as reader:
-            return datetime.datetime.fromtimestamp(reader.start_time // 1000000000)
+            return datetime.datetime.fromtimestamp(reader.start_time // 1000000000, tz=datetime.timezone.utc)
 
     @cached_property
     def is_simulation_time(self) -> bool:

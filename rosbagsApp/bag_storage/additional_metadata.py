@@ -1,3 +1,4 @@
+import datetime
 import json
 from pathlib import Path
 
@@ -45,7 +46,7 @@ class AdditionalMetadata:
 
     def __init__(self, description: str | None = None, hardware: str | None = None, location: str | None = None,
                  thumbnails: dict[str, set[str]] = None,
-                 tags: list[str] = None):
+                 tags: list[str] = None, recording_time: datetime.datetime | None = None):
         self.description = description
         self.hardware = hardware
         self.location = location
@@ -59,6 +60,7 @@ class AdditionalMetadata:
         else:
             if len(tags) != len(set(tags)):
                 raise RuntimeError(f"Tags in AdditionalMetadata must be unique. Tags given: {tags}")
+        self.recording_time = recording_time
 
     def to_json(self) -> str:
         self_dict = {}
@@ -78,6 +80,9 @@ class AdditionalMetadata:
         if len(self.tags) > 0:
             self_dict["tags"] = self.tags
 
+        if self.recording_time is not None:
+            self_dict["recording_time"] = self.recording_time.isoformat()
+
         validate(self_dict, additional_metadata_schema)
         return json.dumps(self_dict, indent=2)
 
@@ -87,7 +92,10 @@ class AdditionalMetadata:
             metadata = json.load(metadata_file)
         validate(metadata, additional_metadata_schema)
         return AdditionalMetadata(metadata.get("description"), metadata.get("hardware"), metadata.get("location"),
-                                  thumbnails_to_sets(metadata.get("thumbnails")), metadata.get("tags", []))
+                                  thumbnails_to_sets(metadata.get("thumbnails")), metadata.get("tags", []),
+                                  datetime.datetime.fromisoformat(
+                                      metadata["recording_time"]) if "recording_time" in metadata else None
+                                  )
 
     @staticmethod
     def default() -> 'AdditionalMetadata':

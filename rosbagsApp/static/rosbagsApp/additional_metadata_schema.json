@@ -41,6 +41,11 @@
           "pattern": "^[\\w\\-_\\.]+$"
         }
       }
+    },
+    "recording_time": {
+      "description": "Time of recording, overrides starting_time in ROS metadata.",
+      "type": "string",
+      "format": "data-time"
     }
   }
 }
