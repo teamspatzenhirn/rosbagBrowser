@@ -1,0 +1,42 @@
+---
+- name: Deploy rosbagBrowser
+  hosts: all
+  tasks:
+    - name: Checkout code
+      synchronize:
+        src: "{{ item }}"
+        dest: ~/rosbagBrowser/
+      with_items:
+        - ../deployment
+        - ../landingpage
+        - ../rosbagBrowser
+        - ../rosbagsApp
+        - ../LICENSE
+        - ../manage.py
+        - ../README.md
+        - ../requirements.txt
+    - name: Update venv
+      pip:
+        virtualenv: ~/rosbagBrowser/.venv-deployment
+        requirements: ~/rosbagBrowser/requirements.txt
+    - name: Deploy gunicorn systemd socket
+      debug:
+        msg: TODO
+    - name: Deploy gunicorn systemd service
+      debug:
+        msg: TODO
+    - name: Deploy nginx config
+      debug:
+        msg: TODO
+    - name: Deploy nginx systemd service
+      debug:
+        msg: TODO
+    - name: run django migrations
+      debug:
+        msg: TODO
+    - name: generate static files
+      debug:
+        msg: TODO
+    - name: fix static file permissions
+      debug:
+        msg: TODO

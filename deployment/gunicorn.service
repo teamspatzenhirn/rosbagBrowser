@@ -1,0 +1,17 @@
+[Unit]
+Description = gunicorn daemon
+Requires = gunicorn.socket
+After = network.target
+
+[Service]
+User = ubuntu
+Group = www-data
+WorkingDirectory = /home/ubuntu/rosbagBrowser
+Environment = DJANGO_SETTINGS_MODULE=rosbagBrowser.settings_staging
+ExecStart = /home/ubuntu/rosbagBrowser/.venv/bin/gunicorn \
+            --access-logfile - \
+            --bind unix:/run/gunicorn.sock \
+            rosbagBrowser.wsgi:application
+
+[Install]
+WantedBy = multi-user.target
