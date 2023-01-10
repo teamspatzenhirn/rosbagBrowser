@@ -7,7 +7,6 @@
         src: "{{ item }}"
         dest: ~/rosbagBrowser/
       with_items:
-        - ../deployment
         - ../landingpage
         - ../rosbagBrowser
         - ../rosbagsApp
@@ -19,24 +18,62 @@
       pip:
         virtualenv: ~/rosbagBrowser/.venv-deployment
         requirements: ~/rosbagBrowser/requirements.txt
+
+    # Gunicorn systemd
     - name: Deploy gunicorn systemd socket
-      debug:
-        msg: TODO
+      copy:
+        src: gunicorn.socket
+        dest: /etc/systemd/system/
     - name: Deploy gunicorn systemd service
-      debug:
-        msg: TODO
+      copy:
+        src: gunicorn.socket
+        dest: /etc/systemd/system/
+
+    # Nginx config
     - name: Deploy nginx config
-      debug:
-        msg: TODO
-    - name: Deploy nginx systemd service
-      debug:
-        msg: TODO
+      copy:
+        src: nginx_config
+        dest: /etc/nginx/sites-available/rosbagBrowser
+    - name: Enable rosbagBrowser site for nginx
+      file:
+        path: /etc/nginx/sites-enabled/rosbagBrowser
+        src: /etc/nginx/sites-available/rosbagBrowser
+        state: link
+    - name: Ensure default nginx site is not enabled
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+    - name: Test nginx config
+      become: true
+      command: nginx -t
+    - name: Enable/Start nginx service
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: true
+
+    # Django setup
     - name: run django migrations
-      debug:
-        msg: TODO
+      shell:
+        chdir: ~/rosbagBrowser
+        cmd: |
+          source .venv-deployment/bin/activate
+          python manage.py migrate
+    # TODO: Ensure STATIC_ROOT exists? Does collectstatic do that?
     - name: generate static files
-      debug:
-        msg: TODO
+      shell:
+        chdir: ~/rosbagBrowser
+        cmd: |
+          source .venv-deployment/bin/activate
+          python manage.py collectstatic
     - name: fix static file permissions
       debug:
         msg: TODO
+
+    # (Re)start gunicorn
+    - name: Start gunicorn
+      systemd:
+        name: gunicorn
+        state: restarted
+        enabled: true
+        daemon_reload: true
