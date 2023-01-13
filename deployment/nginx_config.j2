@@ -1,0 +1,46 @@
+server {
+    server_name {{ domain }};
+
+    location /static/ {
+        root /var/www/rosbagBrowser;
+    }
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    listen [::]:443 ssl;
+    ssl_certificate /etc/letsencrypt/live/{{ domain }}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/{{ domain }}/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    # Redirect https://www.r -> https://r
+    server_name www.{{ domain }};
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    ssl_certificate /etc/letsencrypt/live/{{ domain }}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/{{ domain }}/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    return 301 https://{{ domain }}$request_uri;
+}
+
+server {
+    # Redirect https?://(www.)?r -> https://r
+    if ($host = www.{{ domain }}) {
+        return 301 https://{{ domain }}$request_uri;
+    }
+
+    if ($host = {{ domain }}) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    listen [::]:80;
+    server_name {{ domain }} www.{{ domain }};
+    return 404; # managed by Certbot
+}
