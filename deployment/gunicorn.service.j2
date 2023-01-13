@@ -7,8 +7,8 @@ After = network.target
 User = ubuntu
 Group = www-data
 WorkingDirectory = /home/ubuntu/rosbagBrowser
-Environment = DJANGO_SETTINGS_MODULE=rosbagBrowser.settings_staging
-ExecStart = /home/ubuntu/rosbagBrowser/.venv/bin/gunicorn \
+Environment = DJANGO_SETTINGS_MODULE=rosbagBrowser.settings_{{ django_config }}
+ExecStart = /home/ubuntu/rosbagBrowser/.venv-deployment/bin/gunicorn \
             --access-logfile - \
             --bind unix:/run/gunicorn.sock \
             rosbagBrowser.wsgi:application

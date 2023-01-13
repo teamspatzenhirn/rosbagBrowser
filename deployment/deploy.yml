@@ -1,6 +1,8 @@
 ---
 - name: Deploy rosbagBrowser
   hosts: all
+  environment:
+    DJANGO_SETTINGS_MODULE: "rosbagBrowser.settings_{{ django_config }}"
   tasks:
     - name: Checkout code
       synchronize:
@@ -28,7 +30,7 @@
         update_cache: true
         state: latest
 
-    - name: Update venv
+    - name: Install python deps to venv
       pip:
         virtualenv: ~/rosbagBrowser/.venv-deployment
         requirements: ~/rosbagBrowser/requirements.txt
@@ -41,9 +43,9 @@
         dest: /etc/systemd/system/
     - name: Deploy gunicorn systemd service
       become: true
-      copy:
-        src: gunicorn.socket
-        dest: /etc/systemd/system/
+      template:
+        src: gunicorn.service.j2
+        dest: /etc/systemd/system/gunicorn.service
 
     # Nginx config
     - name: Deploy nginx config
@@ -73,19 +75,41 @@
         enabled: true
 
     # Django setup
+    - name: Run django deployment checks
+      shell:
+        chdir: ~/rosbagBrowser
+        cmd: |
+          set -e
+          . .venv-deployment/bin/activate
+          python3 manage.py check --deploy --fail-level WARNING
     - name: run django migrations
       shell:
         chdir: ~/rosbagBrowser
         cmd: |
+          set -e
           . .venv-deployment/bin/activate
           python3 manage.py migrate
-    # TODO: Ensure STATIC_ROOT exists? Does collectstatic do that?
-    - name: generate static files
+    - name: Create static files directory
+      become: true
+      file:
+        path: "/django_static/static"
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: u=rwx,g=rx,o=rx
+    - name: Dry run collecting static files
       shell:
         chdir: ~/rosbagBrowser
         cmd: |
-          source .venv-deployment/bin/activate
-          python manage.py collectstatic
+          set -e
+          . .venv-deployment/bin/activate
+          python3 manage.py collectstatic --noinput --clear --dry-run
+    - name: Collect static files
+      shell:
+        chdir: ~/rosbagBrowser
+        cmd: |
+          set -e
+          . .venv-deployment/bin/activate
+          python3 manage.py collectstatic --noinput --clear
 
     # (Re)start gunicorn
     - name: Start gunicorn
