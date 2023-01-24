@@ -8,6 +8,7 @@ jobs:
   deploy_ansible:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Add SSH key
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
