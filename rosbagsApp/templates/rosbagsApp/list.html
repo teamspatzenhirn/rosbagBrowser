@@ -66,7 +66,8 @@
         function build_filters() {
             const template = document.getElementById("filter_checkbox_template");
             const topic_filter_container = document.querySelector("#topic_filter .card-body");
-            for (const topic of known_topics) {
+            const known_topics_sorted = Array.from(known_topics).sort();
+            for (const topic of known_topics_sorted) {
                 const clone = template.content.cloneNode(true);
                 const cb = clone.querySelector("input");
                 cb.setAttribute("id", "topic_filter_" + topic);
@@ -78,7 +79,8 @@
             }
 
             const tag_filter_container = document.querySelector("#tag_filter .card-body");
-            for (const tag of known_tags) {
+            const known_tags_sorted = Array.from(known_tags).sort();
+            for (const tag of known_tags_sorted) {
                 const clone = template.content.cloneNode(true);
                 const input = clone.querySelector("input");
                 input.setAttribute("id", "tag_filter_" + tag);
@@ -157,6 +159,8 @@
          */
         function apply_search(bags) {
             const search_input = document.getElementById("search_input");
+
+            console.log("Searching: ", search_input.value);
 
             if (search_input.value === "") {
                 return bags;
