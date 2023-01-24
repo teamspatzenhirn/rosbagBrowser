@@ -22,4 +22,11 @@ jobs:
       - name: Run ansible
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: ansible-playbook -i deployment/production_inventory.ini deployment/deploy.yml
+        run: |
+          ansible-playbook \
+           -i deployment/production_inventory.ini \
+           --extra-vars \
+            "gitlab_key=${{ secrets.PRODUCTION_GITLAB_KEY }} \
+             gitlab_secret=${{ secrets.PRODUCTION_GITLAB_SECRET }} \
+             django_secret=${{ secrets.PRODUCTION_DJANGO_SECRET }}" \
+           deployment/deploy.yml
