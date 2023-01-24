@@ -227,3 +227,7 @@ For deployment, the django `SECRET_KEY` should be changed. This can be done in `
 The django settings for staging are configured in `rosbagBrowser.settings_staging` and can be used with the
 `--settings rosbagBrowser.settings_staging` flag for `manage.py` or via environment variable
 `DJANGO_SETTINGS_MODULE=rosbagBrowser.settings_staging`.
+
+### Ansible
+
+All this is automated using ansible. See [deployment/README.md](deployment/README.md) for more information.
