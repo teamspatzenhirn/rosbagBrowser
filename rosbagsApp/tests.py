@@ -1,6 +1,7 @@
 import datetime
 import json
 import os.path
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -8,6 +9,8 @@ from django.urls import reverse
 
 from rosbagsApp.bag_storage.additional_metadata import AdditionalMetadata, additional_metadata_file_name
 from rosbagsApp.bag_storage.storage import BagStorage, TopicRecordingInfo
+
+TEST_DATA_PATH = "rosbagsApp/testdata"
 
 
 class ListViewTests(TestCase):
@@ -50,8 +53,8 @@ class DetailViewTests(TestCase):
 
 class MetadataStorageTests(TestCase):
     def test_topic_metadata(self):
-        bs = BagStorage()
-        bag = bs.find("unit_test_bag")
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("unit_test_bag")
         self.assertEqual(bag.topics, [
             TopicRecordingInfo('/spatz11/sensor_data',
                                'spatz_interfaces/msg/Spatz11SensorData',
@@ -59,8 +62,8 @@ class MetadataStorageTests(TestCase):
                                123)])
 
     def test_bag_without_additional_metadata_topics(self):
-        bs = BagStorage()
-        bag = bs.find("bag_without_metadata")
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("bag_without_metadata")
         self.assertEqual(bag.topics, [
             TopicRecordingInfo('/spatz11/sensor_data',
                                'spatz_interfaces/msg/Spatz11SensorData',
@@ -86,13 +89,13 @@ class AdditionalMetadataTests(TestCase):
         self.assertFalse("thumbnails" in decoded)
 
     def test_recording_time(self):
-        bs = BagStorage()
-        bag = bs.find("unit_test_bag_recording_time")
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("unit_test_bag_recording_time")
         self.assertEqual(bag.recording_date, datetime.datetime(2023, 1, 6, 18, 41, 1, tzinfo=datetime.timezone.utc))
 
     def test_recording_time_with_tz(self):
-        bs = BagStorage()
-        bag = bs.find("unit_test_bag_recording_time_with_tz")
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("unit_test_bag_recording_time_with_tz")
         self.assertEqual(bag.recording_date, datetime.datetime(2023, 1, 6, 18, 41, 1, tzinfo=datetime.timezone.utc))
         self.assertEqual(bag.recording_date,
                          datetime.datetime(2023, 1, 6, 19, 41, 1,
@@ -102,8 +105,8 @@ class AdditionalMetadataTests(TestCase):
 
 class ThumbnailGeneration(TestCase):
     def test_create_thumbnail_states(self):
-        bs = BagStorage()
-        bag = bs.find("test_state_only")
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("test_state_only")
         expected_thumb_path = bag.path / "thumbnails" / "spatz.png"
         if os.path.exists(expected_thumb_path):
             os.remove(expected_thumb_path)
@@ -126,8 +129,48 @@ class ThumbnailGeneration(TestCase):
 
 class SimulationTimeTests(TestCase):
     def test_identify_simulation_time(self):
-        bs = BagStorage()
-        bag = bs.find("test_state_only")
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("test_state_only")
         self.assertTrue(bag.is_simulation_time)
-        bag = bs.find("unit_test_bag")
+        bag = bs.find_by_name("unit_test_bag")
         self.assertFalse(bag.is_simulation_time)
+
+
+class BagStorageStest(TestCase):
+    def test_list_subdirs(self):
+        bs = BagStorage(TEST_DATA_PATH)
+        bags = list(bs.__iter__())
+        bag_names = [b.name for b in bags]
+        bag_names.sort()
+
+        expected_bags = ['unit_test_bag',
+                         'bag_without_metadata',
+                         'unit_test_bag_recording_time_with_tz',
+                         'unit_test_bag_recording_time',
+                         'unit_test_bag_minimal_metadata',
+                         'test_state_only_with_thumbs',
+                         'test_state_only',
+                         'testbag_in_subdir',
+                         'testbag_in_subdir2']
+        expected_bags.sort()
+
+        self.assertListEqual(expected_bags, bag_names)
+
+    def test_find_in_subdir_by_name(self):
+        bs = BagStorage(TEST_DATA_PATH)
+        self.assertIsNotNone(bs.find_by_name("testbag_in_subdir2"))
+
+    def test_find_in_subdir_by_path(self):
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_path(Path("subdir/subdir2/testbag_in_subdir2"))
+        self.assertIsNotNone(bag)
+
+    def test_subdir_bag_path(self):
+        bs = BagStorage(TEST_DATA_PATH)
+        bag = bs.find_by_name("testbag_in_subdir2")
+        rel_path = str(bag.rel_path).rstrip("/")
+        self.assertTrue(str(rel_path).endswith("subdir/subdir2/testbag_in_subdir2"))
+        self.assertEqual(bag.rel_path, Path("subdir/subdir2/testbag_in_subdir2"))
+
+        path = str(bag.path).rstrip("/")
+        self.assertTrue(str(path).endswith("subdir/subdir2/testbag_in_subdir2"))
