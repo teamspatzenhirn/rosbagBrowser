@@ -21,13 +21,13 @@
 
     <div class="input-group">
         <input type="text" class="form-control" id="input_local_path" readonly
-               value="{{ local_mount_prefix }}/{{ bag.name }}">
+               value="{{ local_mount_prefix }}/{{ bag.rel_path }}">
         <button class="btn btn-outline-secondary" type="button" onclick="copyInputToClipboard('input_local_path')"><i
                 class="bi-clipboard"></i>
         </button>
     </div>
 
-    <a href="{% url "rosbags:generate_thumbnails" %}?bag_name={{ bag.name }}">Create Thumbnails (WIP)</a>
+    <a href="{% url "rosbags:generate_thumbnails" %}?bag_path={{ bag.rel_path }}">Create Thumbnails (WIP)</a>
 
     <h2>Metadata</h2>
 
@@ -56,7 +56,7 @@
                         {{ topic }}:
                         <ul>
                             {% for tn in thumbs %}
-                                <li><a href="{% url "rosbags:thumbnail" bag.name tn %}">{{ tn }}</a></li>
+                                <li><a href="{% url "rosbags:thumbnail" bag.rel_path tn %}">{{ tn }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
@@ -94,7 +94,7 @@
             {% for tn in thumbs %}
                 <div class="col">
                     <div class="card h-100">
-                        <img src="{% url "rosbags:thumbnail" bag.name tn %}" class="card-img-top" alt="{{ tn }}">
+                        <img src="{% url "rosbags:thumbnail" bag.rel_path tn %}" class="card-img-top" alt="{{ tn }}">
                         <div class="card-body">
                             <h6 class="card-title">{{ tn }}</h6>
                         </div>

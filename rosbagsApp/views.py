@@ -28,16 +28,16 @@ def list_view(request):
 
 
 @login_required
-def detail(request, bag_name: str):
+def detail(request, bag_path: str):
     bs = BagStorage()
-    context = {'bag': bs.find(bag_name),
+    context = {'bag': bs.find_by_path(Path(bag_path)),
                'local_mount_prefix': rosbagsApp.settings.ROSBAG_MOUNT_PATH}
     return render(request, "rosbagsApp/detail_view.html", context)
 
 
 @login_required
-def thumbnail(request, bag_name: str, thumb_name: str):
-    bag = BagStorage().find(bag_name)
+def thumbnail(request, bag_path: str, thumb_name: str):
+    bag = BagStorage().find_by_path(Path(bag_path))
     path = os.path.join(bag.path, "thumbnails", thumb_name)
     path = os.path.realpath(path)
     if Path(os.path.commonpath([path, bag.path])) != bag.path:
@@ -46,13 +46,13 @@ def thumbnail(request, bag_name: str, thumb_name: str):
 
 
 def generate_thumbnails(request):
-    bag_name = request.GET.get("bag_name", None)
-    if bag_name is None:
-        return HttpResponseBadRequest("Parameter bag_name is required.")
+    bag_path = request.GET.get("bag_path", None)
+    if bag_path is None:
+        return HttpResponseBadRequest("Parameter bag_path is required.")
     bs = BagStorage()
-    bag = bs.find(bag_name)
+    bag = bs.find_by_path(Path(bag_path))
     if bag is None:
-        return HttpResponseBadRequest(f"Bag with name\"{bag_name}\" is not found.")
+        return HttpResponseBadRequest(f"Bag with path \"{bag_path}\" is not found.")
 
     bag.generate_thumbnails()
 

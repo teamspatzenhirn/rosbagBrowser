@@ -38,11 +38,13 @@ class ROSBag:
      Would opening the reader only once be faster?
     """
 
-    def __init__(self, base_path: Path, dir_name: str):
-        self.path = (base_path / dir_name).resolve()
+    def __init__(self, base_path: Path, rel_path: Path):
+        self._base_path = base_path
+        self._rel_path = rel_path
+
         assert (is_rosbag(self.path))
-        self.base_path = base_path
-        self.dir_name = dir_name
+        # Bag name: last part of path (dir name)
+        self._name: str = str(rel_path.name)
 
         metadata_path = os.path.join(self.path, additional_metadata_file_name)
         if os.path.exists(metadata_path):
@@ -53,7 +55,16 @@ class ROSBag:
     @property
     def name(self):
         """Bag name: name of directory"""
-        return self.dir_name
+        return self._name
+
+    @property
+    def rel_path(self) -> Path:
+        """Path relative to bag storage"""
+        return self._rel_path
+
+    @property
+    def path(self) -> Path:
+        return self._base_path / self._rel_path
 
     def __str__(self):
         return f"ROSBag{{{self.name}}}"
@@ -145,7 +156,18 @@ class ROSBag:
                 "date": self.recording_date.strftime("%Y %b. %d, %H:%M"),
                 "duration": str(self.duration),
                 "tags": self.tags,
+                "path": str(self.rel_path),
                 "description": self.description}
+
+
+def rosbag_iter_impl(base_path: Path, current_subdir: Path) -> Generator[ROSBag, None, None]:
+    for entry in os.scandir(base_path / current_subdir):
+        if entry.is_dir():
+            if is_rosbag(Path(entry.path)):
+                yield ROSBag(base_path, current_subdir / entry.name)
+            else:
+                for b in rosbag_iter_impl(base_path, current_subdir / Path(entry.name)):
+                    yield b
 
 
 class BagStorage:
@@ -157,28 +179,38 @@ class BagStorage:
         """
         :param path: Directory containing ROS bags. Defaults to configured path from ROSBAG_STORAGE_PATH setting
         """
-        self.base_path = Path(path).resolve()
+        self.base_path: Path = Path(path).resolve()
 
     def __iter__(self) -> Generator[ROSBag, None, None]:
         """
         Iterating over the BagStorage yields all bags in configured directory
         """
-        for entry in os.scandir(self.base_path):
-            if entry.is_dir() and is_rosbag(Path(entry.path)):
-                yield ROSBag(self.base_path, entry.name)
+        for b in rosbag_iter_impl(self.base_path, Path(".")):
+            yield b
 
-    def find(self, name: str) -> Optional[ROSBag]:
+    def find_by_path(self, path: Path) -> Optional[ROSBag]:
+        """
+        Lookup bag by path
+        :param path: relative to BagStorage
+        :return:
+        """
+        abs_path = (self.base_path / path).resolve()
+        if Path(os.path.commonpath([abs_path, self.base_path])) != self.base_path:
+            # Path must be below the base path, to prevent accessing outside directories
+            return None
+
+        if not is_rosbag(abs_path):
+            return None
+        return ROSBag(self.base_path, path)
+
+    def find_by_name(self, name: str) -> Optional[ROSBag]:
         """
         Lookup ROS bag by name
         :param name: Name of the ROS bag (directory)
         :return: ROS bag with specified name, or None if not found
         """
-        path = (self.base_path / name).resolve()
 
-        if Path(os.path.commonpath([path, self.base_path])) != self.base_path:
-            # Path must be below the base path, to prevent accessing outside directories
-            return None
-
-        if not is_rosbag(path):
-            return None
-        return ROSBag(self.base_path, name)
+        for b in self.__iter__():
+            if b.name == name:
+                return b
+        return None
